@@ -75,6 +75,17 @@ val telegramApi = TelegramClient(apiKey)
 telegramApi.sendMessage(chatId, msg)
 ```
 
+or you could use a custom `HttpClient`
+```kotlin
+val httpClient = HttpClient(OkHttp) {
+    install(Logging) {
+        logger = Logger.DEFAULT
+        level = LogLevel.ALL
+    }
+}
+val telegramApi = TelegramClient(apiKey, httpClient)
+```
+
 ## License
 
     MIT License

@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation(project(":dataclass"))
+    api(project(":dataclass"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0")
     implementation("io.ktor:ktor-client-core-jvm:1.3.2")
 }
