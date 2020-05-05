@@ -2,17 +2,21 @@
 
 [![](https://jitpack.io/v/omarmiatello/telegram.svg)](https://jitpack.io/#omarmiatello/telegram)
 
-### API version 4.8
+Full API documentation of Telegram Bot API
+https://core.telegram.org/bots/api
+
+**Library API version 4.8**
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
   - 92 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
   - Contains only 1 file: [TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt)
-  - Example: Telegram Webhook: Parse the Telegram request
-  - Example: Reply to the user with a Message
+  - [See example](#example-with-ktor-server): Example with Ktor server
+  - [See example](#telegram-webhook-parse-the-telegram-request): Telegram Webhook: Parse the Telegram request
+  - [See example](#reply-to-the-user-with-a-message): Reply to the user with a Message
 - Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/main/kotlin/TelegramClient.kt))
   - 92 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 68 method for Telegram bot API
-  - Example: Send a message to a user/group/channel
+  - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
 - Module [:dataclass-only:](#how-to-use-dataclass-only-module)
   - 92 `data class` only (serializer not included)
   - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/main/kotlin/TelegramModelsOnly.kt)
@@ -20,7 +24,9 @@ This library has 3 modules:
 
 
 ## How to use `dataclass` module
+
 This module could be used for parse the Telegram requests, and for send back a response.
+
 This module contains only 1 file: [TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt)
 
 #### Setup `dataclass` module
@@ -35,7 +41,7 @@ repositories {
 
 Grab via Gradle (v4 or later):
 ```groovy
-// alternative, contains only: `data class` with Kotlinx/Serialization
+// `data class` with Kotlinx/Serialization
 implementation 'com.github.omarmiatello.telegram:dataclass:4.8'
 ```
 
@@ -65,7 +71,6 @@ post("/") {
 
 ### Telegram Webhook: Parse the Telegram request
 In the previous example we use this below, to parse the Telegram request.
-
 ```kotlin
 // Endpoint for Telegram webhook. Parse the Telegram request
 val request: Update = call.receiveText().parseTelegramRequest()
@@ -117,7 +122,6 @@ data class Update(
 This object handle all possible Telegram update, not just `message`.
 
 NOTE: This library contains a useful Kotlin extension for parse Telegram request from a `String`.
-
 ```kotlin
 fun String.parseTelegramRequest() = Update.fromJson(this)
 ```
@@ -159,7 +163,6 @@ data class SendMessageRequest(
 }
 ```
 
-
 ## How to use `client` module
 
 This module contains only 2 file: [TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt) and [TelegramClient.kt](client/src/main/kotlin/TelegramClient.kt)
@@ -185,7 +188,6 @@ implementation 'com.github.omarmiatello.telegram:client:4.8'
 ### Send a message to a user/group/channel
 
 You could use a custom `HttpClient` (example with logger)
-
 ```kotlin
 val httpClient = HttpClient(OkHttp) {
     install(Logging) {
@@ -196,7 +198,6 @@ val httpClient = HttpClient(OkHttp) {
 ```
 
 Retrive a key from [@BotFather](https://t.me/BotFather)
-
 ```kotlin
 val apiKey = "1000000:aaaaaaaaaa"   // Retrieve a key from @BotFather
 val chatId = "10000_example"        // Choose a destination for your message
@@ -207,7 +208,6 @@ telegramApi.sendMessage(chatId, msg)
 ```
 
 NOTE: `sendMessage()` is a suspend function and return a `Message`.
-
 ```kotlin
 /**
  * <p>Use this method to send text messages. On success, the sent <a href="#message">Message</a> is returned.</p>
@@ -264,6 +264,7 @@ implementation 'com.github.omarmiatello.telegram:dataclass:4.8'
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
 implementation 'com.github.omarmiatello.telegram:dataclass-only:4.8'
 ```
+
 ## License
 
     MIT License
