@@ -1,18 +1,17 @@
 plugins {
-    kotlin("jvm") version "1.3.72"
-    kotlin("plugin.serialization") version "1.3.72"
+    kotlin("jvm") version "1.4.31"
+    kotlin("plugin.serialization") version "1.4.30"
 }
 
 group = "com.github.omarmiatello.telegram"
-version = "4.8"
+version = "5.1"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
 }
 
 tasks {

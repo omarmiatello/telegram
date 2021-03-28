@@ -1,11 +1,11 @@
 val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.31"
 }
 
 group = "com.github.omarmiatello.telegram"
-version = "4.8"
+version = "5.1"
 
 repositories {
     mavenCentral()
@@ -15,10 +15,9 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
     api(project(":dataclass"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0")
-    implementation("io.ktor:ktor-client-core-jvm:1.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
+    implementation("io.ktor:ktor-client-core-jvm:1.5.2")
 }
 
 tasks {

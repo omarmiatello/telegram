@@ -5,20 +5,20 @@
 Full API documentation of Telegram Bot API
 https://core.telegram.org/bots/api
 
-**Library API version 4.8**
+**Library API version 5.1**
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
-  - 92 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
+  - 103 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
   - Contains only 1 file: [TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt)
   - [See example](#example-with-ktor-server): Example with Ktor server
   - [See example](#telegram-webhook-parse-the-telegram-request): Telegram Webhook: Parse the Telegram request
   - [See example](#reply-to-the-user-with-a-message): Reply to the user with a Message
 - Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/main/kotlin/TelegramClient.kt))
-  - 92 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 68 method for Telegram bot API
+  - 103 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 68 method for Telegram bot API
   - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
 - Module [:dataclass-only:](#how-to-use-dataclass-only-module)
-  - 92 `data class` only (serializer not included)
+  - 103 `data class` only (serializer not included)
   - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/main/kotlin/TelegramModelsOnly.kt)
   - Could be used with [Gson](https://github.com/google/gson) or plain Java / Kotlin project.
 
@@ -42,7 +42,7 @@ repositories {
 Grab via Gradle (v4 or later):
 ```groovy
 // `data class` with Kotlinx/Serialization
-implementation 'com.github.omarmiatello.telegram:dataclass:4.8'
+implementation 'com.github.omarmiatello.telegram:dataclass:5.1'
 ```
 
 ### Example with Ktor server
@@ -182,7 +182,7 @@ repositories {
 Grab via Gradle (v4 or later):
 ```groovy
 // `data class` with Kotlinx/Serialization + Ktor client
-implementation 'com.github.omarmiatello.telegram:client:4.8'
+implementation 'com.github.omarmiatello.telegram:client:5.1'
 ```
 
 ### Send a message to a user/group/channel
@@ -256,13 +256,13 @@ repositories {
 Grab via Gradle (v4 or later):
 ```groovy
 // alternative, contains: `data class` with Kotlinx/Serialization + Ktor client
-implementation 'com.github.omarmiatello.telegram:client:4.8'
+implementation 'com.github.omarmiatello.telegram:client:5.1'
 
 // alternative, contains only: `data class` with Kotlinx/Serialization
-implementation 'com.github.omarmiatello.telegram:dataclass:4.8'
+implementation 'com.github.omarmiatello.telegram:dataclass:5.1'
 
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
-implementation 'com.github.omarmiatello.telegram:dataclass-only:4.8'
+implementation 'com.github.omarmiatello.telegram:dataclass-only:5.1'
 ```
 
 ## License

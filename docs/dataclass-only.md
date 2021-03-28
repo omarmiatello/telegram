@@ -19,7 +19,7 @@ repositories {
 
 Grab via Gradle (v4 or later):
 ```groovy
-implementation 'com.github.omarmiatello.telegram:dataclass-only:4.8'
+implementation 'com.github.omarmiatello.telegram:dataclass-only:5.1'
 ```
 
 ### Example
