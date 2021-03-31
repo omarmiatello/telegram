@@ -9,17 +9,9 @@ Contains a simple list of data class
 
 #### Setup
 
-Add this in your root `build.gradle` file:
-```gradle
-repositories {
-    // ...
-    maven { url "https://jitpack.io" }
-}
-```
-
-Grab via Gradle (v4 or later):
-```groovy
-implementation 'com.github.omarmiatello.telegram:dataclass-only:5.1'
+Add this in your root `build.gradle.ktx` file:
+```kotlin
+implementation("com.github.omarmiatello.telegram:dataclass-only:5.1")
 ```
 
 ### Example

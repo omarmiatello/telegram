@@ -1,11 +1,8 @@
 val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "1.4.31"
+    kotlin("jvm") //version "1.4.31"
 }
-
-group = "com.github.omarmiatello.telegram"
-version = "5.1"
 
 repositories {
     mavenCentral()

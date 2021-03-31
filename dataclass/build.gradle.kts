@@ -1,10 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.4.31"
-    kotlin("plugin.serialization") version "1.4.30"
+    kotlin("jvm") //version "1.4.31"
+    kotlin("plugin.serialization")
 }
-
-group = "com.github.omarmiatello.telegram"
-version = "5.1"
 
 repositories {
     mavenCentral()

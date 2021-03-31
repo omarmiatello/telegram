@@ -1,6 +1,6 @@
 # Telegram Bot API in Kotlin
 
-[![](https://jitpack.io/v/omarmiatello/telegram.svg)](https://jitpack.io/#omarmiatello/telegram)
+[![](https://img.shields.io/maven-central/v/com.github.omarmiatello.telegram/dataclass)](https://search.maven.org/search?q=g:com.github.omarmiatello.telegram)
 
 Full API documentation of Telegram Bot API
 https://core.telegram.org/bots/api
@@ -31,18 +31,10 @@ This module contains only 1 file: [TelegramModels.kt](dataclass/src/main/kotlin/
 
 #### Setup `dataclass` module
 
-Add this in your root `build.gradle` file:
-```gradle
-repositories {
-    // ...
-    maven { url "https://jitpack.io" }
-}
-```
-
-Grab via Gradle (v4 or later):
-```groovy
+Add this in your `build.gradle.ktx` file:
+```kotlin
 // `data class` with Kotlinx/Serialization
-implementation 'com.github.omarmiatello.telegram:dataclass:5.1'
+implementation("com.github.omarmiatello.telegram:dataclass:5.1")
 ```
 
 ### Example with Ktor server
@@ -171,18 +163,10 @@ This module contains only 2 file: [TelegramModels.kt](dataclass/src/main/kotlin/
 
 #### Setup `client` module
 
-Add this in your root `build.gradle` file:
-```gradle
-repositories {
-    // ...
-    maven { url "https://jitpack.io" }
-}
-```
-
-Grab via Gradle (v4 or later):
-```groovy
+Add this in your `build.gradle.ktx` file:
+```kotlin
 // `data class` with Kotlinx/Serialization + Ktor client
-implementation 'com.github.omarmiatello.telegram:client:5.1'
+implementation("com.github.omarmiatello.telegram:client:5.1")
 ```
 
 ### Send a message to a user/group/channel
@@ -245,24 +229,16 @@ NOTE: Not for beginner. Guide [here](docs/dataclass-only.md).
 
 ## Recap: Setup
 
-Add this in your root `build.gradle` file:
-```gradle
-repositories {
-    // ...
-    maven { url "https://jitpack.io" }
-}
-```
-
-Grab via Gradle (v4 or later):
-```groovy
+Add this in your `build.gradle.ktx` file:
+```kotlin
 // alternative, contains: `data class` with Kotlinx/Serialization + Ktor client
-implementation 'com.github.omarmiatello.telegram:client:5.1'
+implementation("com.github.omarmiatello.telegram:client:5.1")
 
 // alternative, contains only: `data class` with Kotlinx/Serialization
-implementation 'com.github.omarmiatello.telegram:dataclass:5.1'
+implementation("com.github.omarmiatello.telegram:dataclass:5.1")
 
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
-implementation 'com.github.omarmiatello.telegram:dataclass-only:5.1'
+implementation("com.github.omarmiatello.telegram:dataclass-only:5.1")
 ```
 
 ## License
