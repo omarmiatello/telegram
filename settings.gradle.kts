@@ -1,5 +1,8 @@
-rootProject.name = "telegram-api"
-include("dataclass-only")
-include("dataclass")
-include("client")
-include("sample")
+rootProject.name = "telegram"
+
+include(
+    "dataclass-only",
+    "dataclass",
+    "client",
+    "sample",
+)

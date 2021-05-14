@@ -1,4 +1,4 @@
-# Telegram Bot API in Kotlin
+# Telegram Bot API in Kotlin Multiplatform
 
 [![](https://img.shields.io/maven-central/v/com.github.omarmiatello.telegram/dataclass)](https://search.maven.org/search?q=g:com.github.omarmiatello.telegram)
 
@@ -15,13 +15,24 @@ This library has 3 modules:
   - [See example](#telegram-webhook-parse-the-telegram-request): Telegram Webhook: Parse the Telegram request
   - [See example](#reply-to-the-user-with-a-message): Reply to the user with a Message
 - Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/main/kotlin/TelegramClient.kt))
-  - 103 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 68 method for Telegram bot API
+  - 103 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 76 method for Telegram bot API
   - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
 - Module [:dataclass-only:](#how-to-use-dataclass-only-module)
   - 103 `data class` only (serializer not included)
   - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/main/kotlin/TelegramModelsOnly.kt)
   - Could be used with [Gson](https://github.com/google/gson) or plain Java / Kotlin project.
 
+
+### This project use [Kotlin Multiplatform](https://kotlinlang.org/docs/mpp-intro.html)
+
+Published on Maven Central:
+- `Kotlin/JVM` for Java/Android
+- `Kotlin/JS` configuration used: IR, browser
+- `Kotlin/Native` configuration used: linuxX64
+
+![](https://kotlinlang.org/docs/images/kotlin-multiplatform.png)
+
+Learn more about [Kotlin Mutliplatform benefits](https://kotlinlang.org/docs/multiplatform.html).
 
 ## How to use `dataclass` module
 

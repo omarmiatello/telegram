@@ -1,8 +1,6 @@
 plugins {
-    kotlin("jvm") // version "1.4.31"
+    kotlin("jvm")
 }
-
-version = "unspecified"
 
 repositories {
     mavenCentral()

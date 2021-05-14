@@ -1,27 +1,48 @@
-val ktor_version: String by project
-
 plugins {
-    kotlin("jvm") //version "1.4.31"
+    `multiplatform-library`
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
-    maven { url = uri("https://kotlin.bintray.com/ktor") }
-    maven { url = uri("https://jitpack.io") }
-}
-
-dependencies {
-    api(project(":dataclass"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
-    implementation("io.ktor:ktor-client-core-jvm:1.5.2")
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
+kotlin {
+    addKMTargets(logger = logger)
+    addKMSources(
+        commonMain = {
+            dependencies {
+                api(project(":dataclass"))
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+                implementation("io.ktor:ktor-client-core:1.5.1")
+            }
+        },
+        logger = logger,
+    )
+//    sourceSets {
+//        val commonMain by getting {
+//            dependencies {
+//                api(project(":dataclass"))
+//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+//                implementation("io.ktor:ktor-client-core:1.5.1")
+//            }
+//        }
+//        // val commonTest by getting {
+//        //     dependencies {
+//        //         implementation(kotlin("test-common"))
+//        //         implementation(kotlin("test-annotations-common"))
+//        //     }
+//        // }
+//        // val jvmMain by getting
+//        // val jvmTest by getting {
+//        //     dependencies {
+//        //         implementation(kotlin("test-junit"))
+//        //     }
+//        // }
+//        // val jsMain by getting
+//        // val jsTest by getting {
+//        //     dependencies {
+//        //         implementation(kotlin("test-js"))
+//        //     }
+//        // }
+//        // val nativeMain by getting
+//        // val nativeTest by getting
+//
+//
+//    }
 }
