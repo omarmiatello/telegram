@@ -1,11 +1,10 @@
 package com.github.omarmiatello.telegram
 
 import com.github.omarmiatello.telegram.TelegramRequest.*
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.http.ContentType
-import io.ktor.http.content.TextContent
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.http.content.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
@@ -177,7 +176,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to forward messages of any kind. On success, the sent <a href="#message">Message</a> is returned.</p>
+     * <p>Use this method to forward messages of any kind. Service messages can't be forwarded. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
@@ -203,7 +202,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to copy messages of any kind. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
+     * <p>Use this method to copy messages of any kind. Service messages and invoice messages can't be copied. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
@@ -1970,14 +1969,16 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send invoices. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property chat_id Unique identifier for the target private chat
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property title Product name, 1-32 characters
      * @property description Product description, 1-255 characters
      * @property payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
      * @property provider_token Payments provider token, obtained via <a href="https://t.me/botfather">Botfather</a>
-     * @property start_parameter Unique deep-linking parameter that can be used to generate this invoice when used as a start parameter
      * @property currency Three-letter ISO 4217 currency code, see <a href="/bots/payments#supported-currencies">more on currencies</a>
      * @property prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.)
+     * @property max_tip_amount The maximum accepted amount for tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a maximum tip of <code>US$ 1.45</code> pass <code>max_tip_amount = 145</code>. See the <em>exp</em> parameter in <a href="https://core.telegram.org/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0
+     * @property suggested_tip_amounts A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.
+     * @property start_parameter Unique deep-linking parameter. If left empty, <strong>forwarded copies</strong> of the sent message will have a <em>Pay</em> button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a <em>URL</em> button with a deep link to the bot (instead of a <em>Pay</em> button), with the value used as the start parameter
      * @property provider_data A JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.
      * @property photo_url URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service. People like it better when they see what they are paying for.
      * @property photo_size Photo size
@@ -1998,14 +1999,16 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Message]
      * */
     suspend fun sendInvoice(
-        chat_id: Long,
+        chat_id: String,
         title: String,
         description: String,
         payload: String,
         provider_token: String,
-        start_parameter: String,
         currency: String,
         prices: List<LabeledPrice>,
+        max_tip_amount: Long? = null,
+        suggested_tip_amounts: List<Long>? = null,
+        start_parameter: String? = null,
         provider_data: String? = null,
         photo_url: String? = null,
         photo_size: Long? = null,
@@ -2030,9 +2033,11 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             description,
             payload,
             provider_token,
-            start_parameter,
             currency,
             prices,
+            max_tip_amount,
+            suggested_tip_amounts,
+            start_parameter,
             provider_data,
             photo_url,
             photo_size,

@@ -209,6 +209,7 @@ data class Chat(
  * @property connected_website <em>Optional</em>. The domain name of the website on which the user has logged in. <a href="/widgets/login">More about Telegram Login »</a>
  * @property passport_data <em>Optional</em>. Telegram Passport data
  * @property proximity_alert_triggered <em>Optional</em>. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
+ * @property voice_chat_scheduled <em>Optional</em>. Service message: voice chat scheduled
  * @property voice_chat_started <em>Optional</em>. Service message: voice chat started
  * @property voice_chat_ended <em>Optional</em>. Service message: voice chat ended
  * @property voice_chat_participants_invited <em>Optional</em>. Service message: new participants invited to a voice chat
@@ -268,6 +269,7 @@ data class Message(
     val connected_website: String? = null,
     val passport_data: PassportData? = null,
     val proximity_alert_triggered: ProximityAlertTriggered? = null,
+    val voice_chat_scheduled: VoiceChatScheduled? = null,
     val voice_chat_started: VoiceChatStarted? = null,
     val voice_chat_ended: VoiceChatEnded? = null,
     val voice_chat_participants_invited: VoiceChatParticipantsInvited? = null,
@@ -630,6 +632,17 @@ data class ProximityAlertTriggered(
  * */
 data class MessageAutoDeleteTimerChanged(
     val message_auto_delete_time: Long,
+) : TelegramModel()
+
+/**
+ * <p>This object represents a service message about a voice chat scheduled in the chat.</p>
+ *
+ * @property start_date Point in time (Unix timestamp) when the voice chat is supposed to be started by a chat administrator
+ *
+ * @constructor Creates a [VoiceChatScheduled].
+ * */
+data class VoiceChatScheduled(
+    val start_date: Long,
 ) : TelegramModel()
 
 /**
@@ -1223,18 +1236,20 @@ data class MaskPosition(
  *
  * @property id Unique identifier for this query
  * @property from Sender
- * @property location <em>Optional</em>. Sender location, only for bots that request user location
  * @property query Text of the query (up to 256 characters)
  * @property offset Offset of the results to be returned, can be controlled by the bot
+ * @property chat_type <em>Optional</em>. Type of the chat, from which the inline query was sent. Can be either “sender” for a private chat with the inline query sender, “private”, “group”, “supergroup”, or “channel”. The chat type should be always known for requests sent from official clients and most third-party clients, unless the request was sent from a secret chat
+ * @property location <em>Optional</em>. Sender location, only for bots that request user location
  *
  * @constructor Creates a [InlineQuery].
  * */
 data class InlineQuery(
     val id: String,
     val from: User,
-    val location: Location? = null,
     val query: String,
     val offset: String,
+    val chat_type: String? = null,
+    val location: Location? = null,
 ) : TelegramModel()
 
 /**
@@ -1932,6 +1947,55 @@ data class InputContactMessageContent(
 ) : TelegramModel()
 
 /**
+ * <p>Represents the <a href="#inputmessagecontent">content</a> of an invoice message to be sent as the result of an inline query.</p>
+ *
+ * @property title Product name, 1-32 characters
+ * @property description Product description, 1-255 characters
+ * @property payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
+ * @property provider_token Payment provider token, obtained via <a href="https://t.me/botfather">Botfather</a>
+ * @property currency Three-letter ISO 4217 currency code, see <a href="/bots/payments#supported-currencies">more on currencies</a>
+ * @property prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.)
+ * @property max_tip_amount <em>Optional</em>. The maximum accepted amount for tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a maximum tip of <code>US$ 1.45</code> pass <code>max_tip_amount = 145</code>. See the <em>exp</em> parameter in <a href="https://core.telegram.org/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0
+ * @property suggested_tip_amounts <em>Optional</em>. A JSON-serialized array of suggested amounts of tip in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.
+ * @property provider_data <em>Optional</em>. A JSON-serialized object for data about the invoice, which will be shared with the payment provider. A detailed description of the required fields should be provided by the payment provider.
+ * @property photo_url <em>Optional</em>. URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service. People like it better when they see what they are paying for.
+ * @property photo_size <em>Optional</em>. Photo size
+ * @property photo_width <em>Optional</em>. Photo width
+ * @property photo_height <em>Optional</em>. Photo height
+ * @property need_name <em>Optional</em>. Pass <em>True</em>, if you require the user's full name to complete the order
+ * @property need_phone_number <em>Optional</em>. Pass <em>True</em>, if you require the user's phone number to complete the order
+ * @property need_email <em>Optional</em>. Pass <em>True</em>, if you require the user's email address to complete the order
+ * @property need_shipping_address <em>Optional</em>. Pass <em>True</em>, if you require the user's shipping address to complete the order
+ * @property send_phone_number_to_provider <em>Optional</em>. Pass <em>True</em>, if user's phone number should be sent to provider
+ * @property send_email_to_provider <em>Optional</em>. Pass <em>True</em>, if user's email address should be sent to provider
+ * @property is_flexible <em>Optional</em>. Pass <em>True</em>, if the final price depends on the shipping method
+ *
+ * @constructor Creates a [InputInvoiceMessageContent].
+ * */
+data class InputInvoiceMessageContent(
+    val title: String,
+    val description: String,
+    val payload: String,
+    val provider_token: String,
+    val currency: String,
+    val prices: List<LabeledPrice>,
+    val max_tip_amount: Long? = null,
+    val suggested_tip_amounts: List<Long>? = null,
+    val provider_data: String? = null,
+    val photo_url: String? = null,
+    val photo_size: Long? = null,
+    val photo_width: Long? = null,
+    val photo_height: Long? = null,
+    val need_name: Boolean? = null,
+    val need_phone_number: Boolean? = null,
+    val need_email: Boolean? = null,
+    val need_shipping_address: Boolean? = null,
+    val send_phone_number_to_provider: Boolean? = null,
+    val send_email_to_provider: Boolean? = null,
+    val is_flexible: Boolean? = null,
+) : TelegramModel()
+
+/**
  * <p>Represents a <a href="#inlinequeryresult">result</a> of an inline query that was chosen by the user and sent to their chat partner.</p><p><strong>Note:</strong> It is necessary to enable <a href="/bots/inline#collecting-feedback">inline feedback</a> via <a href="https://t.me/botfather">@Botfather</a> in order to receive these objects in updates.</p>
  *
  * @property result_id The unique identifier for the result that was chosen
@@ -2456,7 +2520,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to forward messages of any kind. On success, the sent <a href="#message">Message</a> is returned.</p>
+     * <p>Use this method to forward messages of any kind. Service messages can't be forwarded. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
@@ -2471,7 +2535,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to copy messages of any kind. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
+     * <p>Use this method to copy messages of any kind. Service messages and invoice messages can't be copied. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
@@ -3513,14 +3577,16 @@ sealed class TelegramRequest {
     /**
      * <p>Use this method to send invoices. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property chat_id Unique identifier for the target private chat
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property title Product name, 1-32 characters
      * @property description Product description, 1-255 characters
      * @property payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
      * @property provider_token Payments provider token, obtained via <a href="https://t.me/botfather">Botfather</a>
-     * @property start_parameter Unique deep-linking parameter that can be used to generate this invoice when used as a start parameter
      * @property currency Three-letter ISO 4217 currency code, see <a href="/bots/payments#supported-currencies">more on currencies</a>
      * @property prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.)
+     * @property max_tip_amount The maximum accepted amount for tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a maximum tip of <code>US$ 1.45</code> pass <code>max_tip_amount = 145</code>. See the <em>exp</em> parameter in <a href="https://core.telegram.org/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0
+     * @property suggested_tip_amounts A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.
+     * @property start_parameter Unique deep-linking parameter. If left empty, <strong>forwarded copies</strong> of the sent message will have a <em>Pay</em> button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a <em>URL</em> button with a deep link to the bot (instead of a <em>Pay</em> button), with the value used as the start parameter
      * @property provider_data A JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.
      * @property photo_url URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service. People like it better when they see what they are paying for.
      * @property photo_size Photo size
@@ -3539,14 +3605,16 @@ sealed class TelegramRequest {
      * @property reply_markup A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>. If empty, one 'Pay <code>total price</code>' button will be shown. If not empty, the first button must be a Pay button.
      * */
     data class SendInvoiceRequest(
-        val chat_id: Long,
+        val chat_id: String,
         val title: String,
         val description: String,
         val payload: String,
         val provider_token: String,
-        val start_parameter: String,
         val currency: String,
         val prices: List<LabeledPrice>,
+        val max_tip_amount: Long? = null,
+        val suggested_tip_amounts: List<Long>? = null,
+        val start_parameter: String? = null,
         val provider_data: String? = null,
         val photo_url: String? = null,
         val photo_size: Long? = null,

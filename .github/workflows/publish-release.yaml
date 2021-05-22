@@ -7,9 +7,13 @@ on:
 
 jobs:
   publish:
-    runs-on: [ubuntu-latest]
+    strategy:
+      matrix:
+        os: [macOS-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{matrix.os}}
     env:
       GRADLE_OPTS: -Dorg.gradle.parallel=false
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -46,7 +50,7 @@ jobs:
           path: '~/.m2/repository/'
 
       - name: Publish to the Snapshot Repository
-        run: ./gradlew publishReleasePublicationToNexusRepository
+        run: ./gradlew publishAllPublicationsToMavenRepository
         env:
           ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
