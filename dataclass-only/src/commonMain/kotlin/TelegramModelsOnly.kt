@@ -2,10 +2,12 @@ package com.github.omarmiatello.telegram
 
 sealed class TelegramModel
 sealed class InputMedia : TelegramModel()
-sealed class InputMessageContent : TelegramModel()
 sealed class InlineQueryResult : TelegramModel()
 sealed class PassportElementError : TelegramModel()
+sealed class ChatMember : TelegramModel()
+sealed class BotCommandScope : TelegramModel()
 sealed class KeyboardOption : TelegramModel()
+sealed class InputMessageContent : TelegramModel()
 sealed class VoiceChatStarted : TelegramModel()
 data class TelegramResponse<T>(val ok: Boolean, val result: T)
 
@@ -705,6 +707,7 @@ data class File(
  * @property keyboard Array of button rows, each represented by an Array of <a href="#keyboardbutton">KeyboardButton</a> objects
  * @property resize_keyboard <em>Optional</em>. Requests clients to resize the keyboard vertically for optimal fit (e.g., make the keyboard smaller if there are just two rows of buttons). Defaults to <em>false</em>, in which case the custom keyboard is always of the same height as the app's standard keyboard.
  * @property one_time_keyboard <em>Optional</em>. Requests clients to hide the keyboard as soon as it's been used. The keyboard will still be available, but clients will automatically display the usual letter-keyboard in the chat – the user can press a special button in the input field to see the custom keyboard again. Defaults to <em>false</em>.
+ * @property input_field_placeholder <em>Optional</em>. The placeholder to be shown in the input field when the keyboard is active; 1-64 characters
  * @property selective <em>Optional</em>. Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the <em>text</em> of the <a href="#message">Message</a> object; 2) if the bot's message is a reply (has <em>reply_to_message_id</em>), sender of the original message.<br><br><em>Example:</em> A user requests to change the bot's language, bot replies to the request with a keyboard to select the new language. Other users in the group don't see the keyboard.
  *
  * @constructor Creates a [ReplyKeyboardMarkup].
@@ -713,6 +716,7 @@ data class ReplyKeyboardMarkup(
     val keyboard: List<List<KeyboardButton>>,
     val resize_keyboard: Boolean? = null,
     val one_time_keyboard: Boolean? = null,
+    val input_field_placeholder: String? = null,
     val selective: Boolean? = null,
 ) : KeyboardOption()
 
@@ -848,12 +852,14 @@ data class CallbackQuery(
  * </blockquote>
  *
  * @property force_reply Shows reply interface to the user, as if they manually selected the bot's message and tapped 'Reply'
+ * @property input_field_placeholder <em>Optional</em>. The placeholder to be shown in the input field when the reply is active; 1-64 characters
  * @property selective <em>Optional</em>. Use this parameter if you want to force reply from specific users only. Targets: 1) users that are @mentioned in the <em>text</em> of the <a href="#message">Message</a> object; 2) if the bot's message is a reply (has <em>reply_to_message_id</em>), sender of the original message.
  *
  * @constructor Creates a [ForceReply].
  * */
 data class ForceReply(
     val force_reply: Boolean,
+    val input_field_placeholder: String? = null,
     val selective: Boolean? = null,
 ) : KeyboardOption()
 
@@ -896,57 +902,134 @@ data class ChatInviteLink(
 ) : TelegramModel()
 
 /**
- * <p>This object contains information about one member of a chat.</p>
+ * <p>Represents a <a href="#chatmember">chat member</a> that owns the chat and has all administrator privileges.</p>
  *
+ * @property status The member's status in the chat, always “creator”
  * @property user Information about the user
- * @property status The member's status in the chat. Can be “creator”, “administrator”, “member”, “restricted”, “left” or “kicked”
- * @property custom_title <em>Optional</em>. Owner and administrators only. Custom title for this user
- * @property is_anonymous <em>Optional</em>. Owner and administrators only. True, if the user's presence in the chat is hidden
- * @property can_be_edited <em>Optional</em>. Administrators only. True, if the bot is allowed to edit administrator privileges of that user
- * @property can_manage_chat <em>Optional</em>. Administrators only. True, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
- * @property can_post_messages <em>Optional</em>. Administrators only. True, if the administrator can post in the channel; channels only
- * @property can_edit_messages <em>Optional</em>. Administrators only. True, if the administrator can edit messages of other users and can pin messages; channels only
- * @property can_delete_messages <em>Optional</em>. Administrators only. True, if the administrator can delete messages of other users
- * @property can_manage_voice_chats <em>Optional</em>. Administrators only. True, if the administrator can manage voice chats
- * @property can_restrict_members <em>Optional</em>. Administrators only. True, if the administrator can restrict, ban or unban chat members
- * @property can_promote_members <em>Optional</em>. Administrators only. True, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by the user)
- * @property can_change_info <em>Optional</em>. Administrators and restricted only. True, if the user is allowed to change the chat title, photo and other settings
- * @property can_invite_users <em>Optional</em>. Administrators and restricted only. True, if the user is allowed to invite new users to the chat
- * @property can_pin_messages <em>Optional</em>. Administrators and restricted only. True, if the user is allowed to pin messages; groups and supergroups only
- * @property is_member <em>Optional</em>. Restricted only. True, if the user is a member of the chat at the moment of the request
- * @property can_send_messages <em>Optional</em>. Restricted only. True, if the user is allowed to send text messages, contacts, locations and venues
- * @property can_send_media_messages <em>Optional</em>. Restricted only. True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes
- * @property can_send_polls <em>Optional</em>. Restricted only. True, if the user is allowed to send polls
- * @property can_send_other_messages <em>Optional</em>. Restricted only. True, if the user is allowed to send animations, games, stickers and use inline bots
- * @property can_add_web_page_previews <em>Optional</em>. Restricted only. True, if the user is allowed to add web page previews to their messages
- * @property until_date <em>Optional</em>. Restricted and kicked only. Date when restrictions will be lifted for this user; unix time
+ * @property is_anonymous True, if the user's presence in the chat is hidden
+ * @property custom_title <em>Optional</em>. Custom title for this user
  *
- * @constructor Creates a [ChatMember].
+ * @constructor Creates a [ChatMemberOwner].
  * */
-data class ChatMember(
-    val user: User,
+data class ChatMemberOwner(
     val status: String,
+    val user: User,
+    val is_anonymous: Boolean,
     val custom_title: String? = null,
-    val is_anonymous: Boolean? = null,
-    val can_be_edited: Boolean? = null,
-    val can_manage_chat: Boolean? = null,
+) : ChatMember()
+
+/**
+ * <p>Represents a <a href="#chatmember">chat member</a> that has some additional privileges.</p>
+ *
+ * @property status The member's status in the chat, always “administrator”
+ * @property user Information about the user
+ * @property can_be_edited True, if the bot is allowed to edit administrator privileges of that user
+ * @property is_anonymous True, if the user's presence in the chat is hidden
+ * @property can_manage_chat True, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
+ * @property can_delete_messages True, if the administrator can delete messages of other users
+ * @property can_manage_voice_chats True, if the administrator can manage voice chats
+ * @property can_restrict_members True, if the administrator can restrict, ban or unban chat members
+ * @property can_promote_members True, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by the user)
+ * @property can_change_info True, if the user is allowed to change the chat title, photo and other settings
+ * @property can_invite_users True, if the user is allowed to invite new users to the chat
+ * @property can_post_messages <em>Optional</em>. True, if the administrator can post in the channel; channels only
+ * @property can_edit_messages <em>Optional</em>. True, if the administrator can edit messages of other users and can pin messages; channels only
+ * @property can_pin_messages <em>Optional</em>. True, if the user is allowed to pin messages; groups and supergroups only
+ * @property custom_title <em>Optional</em>. Custom title for this user
+ *
+ * @constructor Creates a [ChatMemberAdministrator].
+ * */
+data class ChatMemberAdministrator(
+    val status: String,
+    val user: User,
+    val can_be_edited: Boolean,
+    val is_anonymous: Boolean,
+    val can_manage_chat: Boolean,
+    val can_delete_messages: Boolean,
+    val can_manage_voice_chats: Boolean,
+    val can_restrict_members: Boolean,
+    val can_promote_members: Boolean,
+    val can_change_info: Boolean,
+    val can_invite_users: Boolean,
     val can_post_messages: Boolean? = null,
     val can_edit_messages: Boolean? = null,
-    val can_delete_messages: Boolean? = null,
-    val can_manage_voice_chats: Boolean? = null,
-    val can_restrict_members: Boolean? = null,
-    val can_promote_members: Boolean? = null,
-    val can_change_info: Boolean? = null,
-    val can_invite_users: Boolean? = null,
     val can_pin_messages: Boolean? = null,
-    val is_member: Boolean? = null,
-    val can_send_messages: Boolean? = null,
-    val can_send_media_messages: Boolean? = null,
-    val can_send_polls: Boolean? = null,
-    val can_send_other_messages: Boolean? = null,
-    val can_add_web_page_previews: Boolean? = null,
-    val until_date: Long? = null,
-) : TelegramModel()
+    val custom_title: String? = null,
+) : ChatMember()
+
+/**
+ * <p>Represents a <a href="#chatmember">chat member</a> that has no additional privileges or restrictions.</p>
+ *
+ * @property status The member's status in the chat, always “member”
+ * @property user Information about the user
+ *
+ * @constructor Creates a [ChatMemberMember].
+ * */
+data class ChatMemberMember(
+    val status: String,
+    val user: User,
+) : ChatMember()
+
+/**
+ * <p>Represents a <a href="#chatmember">chat member</a> that is under certain restrictions in the chat. Supergroups only.</p>
+ *
+ * @property status The member's status in the chat, always “restricted”
+ * @property user Information about the user
+ * @property is_member True, if the user is a member of the chat at the moment of the request
+ * @property can_change_info True, if the user is allowed to change the chat title, photo and other settings
+ * @property can_invite_users True, if the user is allowed to invite new users to the chat
+ * @property can_pin_messages True, if the user is allowed to pin messages
+ * @property can_send_messages True, if the user is allowed to send text messages, contacts, locations and venues
+ * @property can_send_media_messages True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes
+ * @property can_send_polls True, if the user is allowed to send polls
+ * @property can_send_other_messages True, if the user is allowed to send animations, games, stickers and use inline bots
+ * @property can_add_web_page_previews True, if the user is allowed to add web page previews to their messages
+ * @property until_date Date when restrictions will be lifted for this user; unix time. If 0, then the user is restricted forever
+ *
+ * @constructor Creates a [ChatMemberRestricted].
+ * */
+data class ChatMemberRestricted(
+    val status: String,
+    val user: User,
+    val is_member: Boolean,
+    val can_change_info: Boolean,
+    val can_invite_users: Boolean,
+    val can_pin_messages: Boolean,
+    val can_send_messages: Boolean,
+    val can_send_media_messages: Boolean,
+    val can_send_polls: Boolean,
+    val can_send_other_messages: Boolean,
+    val can_add_web_page_previews: Boolean,
+    val until_date: Long,
+) : ChatMember()
+
+/**
+ * <p>Represents a <a href="#chatmember">chat member</a> that isn't currently a member of the chat, but may join it themselves.</p>
+ *
+ * @property status The member's status in the chat, always “left”
+ * @property user Information about the user
+ *
+ * @constructor Creates a [ChatMemberLeft].
+ * */
+data class ChatMemberLeft(
+    val status: String,
+    val user: User,
+) : ChatMember()
+
+/**
+ * <p>Represents a <a href="#chatmember">chat member</a> that was banned in the chat and can't return to the chat or view chat messages.</p>
+ *
+ * @property status The member's status in the chat, always “kicked”
+ * @property user Information about the user
+ * @property until_date Date when restrictions will be lifted for this user; unix time. If 0, then the user is banned forever
+ *
+ * @constructor Creates a [ChatMemberBanned].
+ * */
+data class ChatMemberBanned(
+    val status: String,
+    val user: User,
+    val until_date: Long,
+) : ChatMember()
 
 /**
  * <p>This object represents changes in the status of a chat member.</p>
@@ -967,7 +1050,7 @@ data class ChatMemberUpdated(
     val old_chat_member: ChatMember,
     val new_chat_member: ChatMember,
     val invite_link: ChatInviteLink? = null,
-) : TelegramModel()
+) : ChatMember()
 
 /**
  * <p>Describes actions that a non-administrator user is allowed to take in a chat.</p>
@@ -1019,6 +1102,91 @@ data class BotCommand(
     val command: String,
     val description: String,
 ) : TelegramModel()
+
+/**
+ * <p>Represents the default <a href="#botcommandscope">scope</a> of bot commands. Default commands are used if no commands with a <a href="#determining-list-of-commands">narrower scope</a> are specified for the user.</p>
+ *
+ * @property type Scope type, must be <em>default</em>
+ *
+ * @constructor Creates a [BotCommandScopeDefault].
+ * */
+data class BotCommandScopeDefault(
+    val type: String,
+) : BotCommandScope()
+
+/**
+ * <p>Represents the <a href="#botcommandscope">scope</a> of bot commands, covering all private chats.</p>
+ *
+ * @property type Scope type, must be <em>all_private_chats</em>
+ *
+ * @constructor Creates a [BotCommandScopeAllPrivateChats].
+ * */
+data class BotCommandScopeAllPrivateChats(
+    val type: String,
+) : BotCommandScope()
+
+/**
+ * <p>Represents the <a href="#botcommandscope">scope</a> of bot commands, covering all group and supergroup chats.</p>
+ *
+ * @property type Scope type, must be <em>all_group_chats</em>
+ *
+ * @constructor Creates a [BotCommandScopeAllGroupChats].
+ * */
+data class BotCommandScopeAllGroupChats(
+    val type: String,
+) : BotCommandScope()
+
+/**
+ * <p>Represents the <a href="#botcommandscope">scope</a> of bot commands, covering all group and supergroup chat administrators.</p>
+ *
+ * @property type Scope type, must be <em>all_chat_administrators</em>
+ *
+ * @constructor Creates a [BotCommandScopeAllChatAdministrators].
+ * */
+data class BotCommandScopeAllChatAdministrators(
+    val type: String,
+) : BotCommandScope()
+
+/**
+ * <p>Represents the <a href="#botcommandscope">scope</a> of bot commands, covering a specific chat.</p>
+ *
+ * @property type Scope type, must be <em>chat</em>
+ * @property chat_id Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)
+ *
+ * @constructor Creates a [BotCommandScopeChat].
+ * */
+data class BotCommandScopeChat(
+    val type: String,
+    val chat_id: String,
+) : BotCommandScope()
+
+/**
+ * <p>Represents the <a href="#botcommandscope">scope</a> of bot commands, covering all administrators of a specific group or supergroup chat.</p>
+ *
+ * @property type Scope type, must be <em>chat_administrators</em>
+ * @property chat_id Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)
+ *
+ * @constructor Creates a [BotCommandScopeChatAdministrators].
+ * */
+data class BotCommandScopeChatAdministrators(
+    val type: String,
+    val chat_id: String,
+) : BotCommandScope()
+
+/**
+ * <p>Represents the <a href="#botcommandscope">scope</a> of bot commands, covering a specific member of a group or supergroup chat.</p>
+ *
+ * @property type Scope type, must be <em>chat_member</em>
+ * @property chat_id Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)
+ * @property user_id Unique identifier of the target user
+ *
+ * @constructor Creates a [BotCommandScopeChatMember].
+ * */
+data class BotCommandScopeChatMember(
+    val type: String,
+    val chat_id: String,
+    val user_id: Long,
+) : BotCommandScope()
 
 /**
  * <p>Contains information about why a request was unsuccessful.</p>
@@ -1881,7 +2049,7 @@ data class InputTextMessageContent(
     val parse_mode: ParseMode? = null,
     val entities: List<MessageEntity>? = null,
     val disable_web_page_preview: Boolean? = null,
-) : TelegramModel()
+) : InputMessageContent()
 
 /**
  * <p>Represents the <a href="#inputmessagecontent">content</a> of a location message to be sent as the result of an inline query.</p>
@@ -2840,7 +3008,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to stop updating a live location message before <em>live_period</em> expires. On success, if the message was sent by the bot, the sent <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to stop updating a live location message before <em>live_period</em> expires. On success, if the message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message with live location to stop
@@ -3008,14 +3176,14 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to kick a user from a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless <a href="#unbanchatmember">unbanned</a> first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns <em>True</em> on success.</p>
+     * <p>Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless <a href="#unbanchatmember">unbanned</a> first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format <code>@channelusername</code>)
      * @property user_id Unique identifier of the target user
      * @property until_date Date when the user will be unbanned, unix time. If user is banned for more than 366 days or less than 30 seconds from the current time they are considered to be banned forever. Applied for supergroups and channels only.
      * @property revoke_messages Pass <em>True</em> to delete all messages from the chat for the user that is being removed. If <em>False</em>, the user will be able to see messages in the group that were sent before the user was removed. Always <em>True</em> for supergroups and channels.
      * */
-    data class KickChatMemberRequest(
+    data class BanChatMemberRequest(
         val chat_id: String,
         val user_id: Long,
         val until_date: Long? = null,
@@ -3023,7 +3191,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to unban a previously kicked user in a supergroup or channel. The user will <strong>not</strong> return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be <strong>removed</strong> from the chat. If you don't want this, use the parameter <em>only_if_banned</em>. Returns <em>True</em> on success.</p>
+     * <p>Use this method to unban a previously banned user in a supergroup or channel. The user will <strong>not</strong> return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be <strong>removed</strong> from the chat. If you don't want this, use the parameter <em>only_if_banned</em>. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format <code>@username</code>)
      * @property user_id Unique identifier of the target user
@@ -3264,7 +3432,7 @@ sealed class TelegramRequest {
      *
      * @property chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format <code>@channelusername</code>)
      * */
-    data class GetChatMembersCountRequest(
+    data class GetChatMemberCountRequest(
         val chat_id: String,
     ) : TelegramRequest()
 
@@ -3319,12 +3487,38 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to change the list of the bot's commands. Returns <em>True</em> on success.</p>
+     * <p>Use this method to change the list of the bot's commands. See <a href="https://core.telegram.org/bots#commands"></a><a href="https://core.telegram.org/bots#commands">https://core.telegram.org/bots#commands</a> for more details about bot commands. Returns <em>True</em> on success.</p>
      *
      * @property commands A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.
+     * @property scope A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to <a href="#botcommandscopedefault">BotCommandScopeDefault</a>.
+     * @property language_code A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
      * */
     data class SetMyCommandsRequest(
         val commands: List<BotCommand>,
+        val scope: BotCommandScope? = null,
+        val language_code: String? = null,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, <a href="#determining-list-of-commands">higher level commands</a> will be shown to affected users. Returns <em>True</em> on success.</p>
+     *
+     * @property scope A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to <a href="#botcommandscopedefault">BotCommandScopeDefault</a>.
+     * @property language_code A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
+     * */
+    data class DeleteMyCommandsRequest(
+        val scope: BotCommandScope? = null,
+        val language_code: String? = null,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to get the current list of the bot's commands for the given scope and user language. Returns Array of <a href="#botcommand">BotCommand</a> on success. If commands aren't set, an empty list is returned.</p>
+     *
+     * @property scope A JSON-serialized object, describing scope of users. Defaults to <a href="#botcommandscopedefault">BotCommandScopeDefault</a>.
+     * @property language_code A two-letter ISO 639-1 language code or an empty string
+     * */
+    data class GetMyCommandsRequest(
+        val scope: BotCommandScope? = null,
+        val language_code: String? = null,
     ) : TelegramRequest()
 
 
@@ -3375,7 +3569,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded. Use a previously uploaded file via its file_id or specify a URL. On success, if the edited message was sent by the bot, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
@@ -3407,7 +3601,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to stop a poll which was sent by the bot. On success, the stopped <a href="#poll">Poll</a> with the final results is returned.</p>
+     * <p>Use this method to stop a poll which was sent by the bot. On success, the stopped <a href="#poll">Poll</a> is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Identifier of the original message with the poll
@@ -3698,7 +3892,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to set the score of the specified user in a game. On success, if the message was sent by the bot, returns the edited <a href="#message">Message</a>, otherwise returns <em>True</em>. Returns an error, if the new score is not greater than the user's current score in the chat and <em>force</em> is <em>False</em>.</p>
+     * <p>Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Returns an error, if the new score is not greater than the user's current score in the chat and <em>force</em> is <em>False</em>.</p>
      *
      * @property user_id User identifier
      * @property score New score, must be non-negative

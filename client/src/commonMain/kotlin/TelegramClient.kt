@@ -1,10 +1,11 @@
 package com.github.omarmiatello.telegram
 
 import com.github.omarmiatello.telegram.TelegramRequest.*
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.http.content.*
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.http.ContentType
+import io.ktor.http.content.TextContent
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
@@ -698,7 +699,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to stop updating a live location message before <em>live_period</em> expires. On success, if the message was sent by the bot, the sent <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to stop updating a live location message before <em>live_period</em> expires. On success, if the message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message with live location to stop
@@ -977,7 +978,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to kick a user from a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless <a href="#unbanchatmember">unbanned</a> first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns <em>True</em> on success.</p>
+     * <p>Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless <a href="#unbanchatmember">unbanned</a> first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format <code>@channelusername</code>)
      * @property user_id Unique identifier of the target user
@@ -986,14 +987,14 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      *
      * @return [Boolean]
      * */
-    suspend fun kickChatMember(
+    suspend fun banChatMember(
         chat_id: String,
         user_id: Long,
         until_date: Long? = null,
         revoke_messages: Boolean? = null,
     ) = telegramPost(
-        "$basePath/kickChatMember",
-        KickChatMemberRequest(
+        "$basePath/banChatMember",
+        BanChatMemberRequest(
             chat_id,
             user_id,
             until_date,
@@ -1003,7 +1004,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to unban a previously kicked user in a supergroup or channel. The user will <strong>not</strong> return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be <strong>removed</strong> from the chat. If you don't want this, use the parameter <em>only_if_banned</em>. Returns <em>True</em> on success.</p>
+     * <p>Use this method to unban a previously banned user in a supergroup or channel. The user will <strong>not</strong> return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be <strong>removed</strong> from the chat. If you don't want this, use the parameter <em>only_if_banned</em>. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target group or username of the target supergroup or channel (in the format <code>@username</code>)
      * @property user_id Unique identifier of the target user
@@ -1430,11 +1431,11 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      *
      * @return [Int]
      * */
-    suspend fun getChatMembersCount(
+    suspend fun getChatMemberCount(
         chat_id: String,
     ) = telegramPost(
-        "$basePath/getChatMembersCount",
-        GetChatMembersCountRequest(
+        "$basePath/getChatMemberCount",
+        GetChatMemberCountRequest(
             chat_id,
         ).toJsonForRequest(),
         Int.serializer()
@@ -1529,29 +1530,67 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to change the list of the bot's commands. Returns <em>True</em> on success.</p>
+     * <p>Use this method to change the list of the bot's commands. See <a href="https://core.telegram.org/bots#commands"></a><a href="https://core.telegram.org/bots#commands">https://core.telegram.org/bots#commands</a> for more details about bot commands. Returns <em>True</em> on success.</p>
      *
      * @property commands A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.
+     * @property scope A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to <a href="#botcommandscopedefault">BotCommandScopeDefault</a>.
+     * @property language_code A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
      *
      * @return [Boolean]
      * */
     suspend fun setMyCommands(
         commands: List<BotCommand>,
+        scope: BotCommandScope? = null,
+        language_code: String? = null,
     ) = telegramPost(
         "$basePath/setMyCommands",
         SetMyCommandsRequest(
             commands,
+            scope,
+            language_code,
         ).toJsonForRequest(),
         Boolean.serializer()
     )
 
     /**
-     * <p>Use this method to get the current list of the bot's commands. Requires no parameters. Returns Array of <a href="#botcommand">BotCommand</a> on success.</p>
+     * <p>Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, <a href="#determining-list-of-commands">higher level commands</a> will be shown to affected users. Returns <em>True</em> on success.</p>
      *
+     * @property scope A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to <a href="#botcommandscopedefault">BotCommandScopeDefault</a>.
+     * @property language_code A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands
      *
-     * @return [List<BotCommand>]
+     * @return [Boolean]
      * */
-    suspend fun getMyCommands() = telegramGet("$basePath/getMyCommands", ListSerializer(BotCommand.serializer()))
+    suspend fun deleteMyCommands(
+        scope: BotCommandScope? = null,
+        language_code: String? = null,
+    ) = telegramPost(
+        "$basePath/deleteMyCommands",
+        DeleteMyCommandsRequest(
+            scope,
+            language_code,
+        ).toJsonForRequest(),
+        Boolean.serializer()
+    )
+
+    /**
+     * <p>Use this method to get the current list of the bot's commands for the given scope and user language. Returns Array of <a href="#botcommand">BotCommand</a> on success. If commands aren't set, an empty list is returned.</p>
+     *
+     * @property scope A JSON-serialized object, describing scope of users. Defaults to <a href="#botcommandscopedefault">BotCommandScopeDefault</a>.
+     * @property language_code A two-letter ISO 639-1 language code or an empty string
+     *
+     * @return [list]
+     * */
+    suspend fun getMyCommands(
+        scope: BotCommandScope? = null,
+        language_code: String? = null,
+    ) = telegramPost(
+        "$basePath/getMyCommands",
+        GetMyCommandsRequest(
+            scope,
+            language_code,
+        ).toJsonForRequest(),
+        ListSerializer(BotCommand.serializer())
+    )
 
 // Updating messages
 
@@ -1629,7 +1668,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded. Use a previously uploaded file via its file_id or specify a URL. On success, if the edited message was sent by the bot, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
@@ -1684,7 +1723,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to stop a poll which was sent by the bot. On success, the stopped <a href="#poll">Poll</a> with the final results is returned.</p>
+     * <p>Use this method to stop a poll which was sent by the bot. On success, the stopped <a href="#poll">Poll</a> is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Identifier of the original message with the poll
@@ -2164,7 +2203,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to set the score of the specified user in a game. On success, if the message was sent by the bot, returns the edited <a href="#message">Message</a>, otherwise returns <em>True</em>. Returns an error, if the new score is not greater than the user's current score in the chat and <em>force</em> is <em>False</em>.</p>
+     * <p>Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Returns an error, if the new score is not greater than the user's current score in the chat and <em>force</em> is <em>False</em>.</p>
      *
      * @property user_id User identifier
      * @property score New score, must be non-negative
