@@ -1,7 +1,7 @@
 # Telegram Bot API in Kotlin
 ## How to use `dataclass-only` module
 
-This module contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/main/kotlin/TelegramModelsOnly.kt)
+This module contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/commonMain/kotlin/TelegramModelsOnly.kt)
 
 NOTE: Not for beginner
 

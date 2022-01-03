@@ -10,16 +10,16 @@ https://core.telegram.org/bots/api
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
   - 115 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
-  - Contains only 1 file: [TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt)
+  - Contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt)
   - [See example](#example-with-ktor-server): Example with Ktor server
   - [See example](#telegram-webhook-parse-the-telegram-request): Telegram Webhook: Parse the Telegram request
   - [See example](#reply-to-the-user-with-a-message): Reply to the user with a Message
-- Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/main/kotlin/TelegramClient.kt))
+- Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/commonMain/kotlin/TelegramClient.kt))
   - 115 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 80 method for Telegram bot API
   - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
 - Module [:dataclass-only:](#how-to-use-dataclass-only-module)
   - 115 `data class` only (serializer not included)
-  - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/main/kotlin/TelegramModelsOnly.kt)
+  - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/commonMain/kotlin/TelegramModelsOnly.kt)
   - Could be used with [Gson](https://github.com/google/gson) or plain Java / Kotlin project.
 
 
@@ -38,7 +38,7 @@ Learn more about [Kotlin Mutliplatform benefits](https://kotlinlang.org/docs/mul
 
 This module could be used for parse the Telegram requests, and for send back a response.
 
-This module contains only 1 file: [TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt)
+This module contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt)
 
 #### Setup `dataclass` module
 
@@ -168,7 +168,7 @@ data class SendMessageRequest(
 
 ## How to use `client` module
 
-This module contains only 2 file: [TelegramModels.kt](dataclass/src/main/kotlin/TelegramModels.kt) and [TelegramClient.kt](client/src/main/kotlin/TelegramClient.kt)
+This module contains only 2 file: [TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt) and [TelegramClient.kt](client/src/commonMain/kotlin/TelegramClient.kt)
 
 > Note: the `client` module include `dataclass` module
 
@@ -234,7 +234,7 @@ suspend fun sendMessage(
 
 ## How to use `dataclass-only` module
 
-This module contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/main/kotlin/TelegramModelsOnly.kt)
+This module contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/commonMain/kotlin/TelegramModelsOnly.kt)
 
 NOTE: Not for beginner. Guide [here](docs/dataclass-only.md).
 
