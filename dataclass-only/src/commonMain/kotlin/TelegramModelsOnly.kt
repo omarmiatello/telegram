@@ -125,12 +125,14 @@ data class User(
  * @property last_name <em>Optional</em>. Last name of the other party in a private chat
  * @property photo <em>Optional</em>. Chat photo. Returned only in <a href="#getchat">getChat</a>.
  * @property bio <em>Optional</em>. Bio of the other party in a private chat. Returned only in <a href="#getchat">getChat</a>.
+ * @property has_private_forwards <em>Optional</em>. True, if privacy settings of the other party in the private chat allows to use <code>tg://user?id=&lt;user_id&gt;</code> links only in chats with the user. Returned only in <a href="#getchat">getChat</a>.
  * @property description <em>Optional</em>. Description, for groups, supergroups and channel chats. Returned only in <a href="#getchat">getChat</a>.
  * @property invite_link <em>Optional</em>. Primary invite link, for groups, supergroups and channel chats. Returned only in <a href="#getchat">getChat</a>.
  * @property pinned_message <em>Optional</em>. The most recent pinned message (by sending date). Returned only in <a href="#getchat">getChat</a>.
  * @property permissions <em>Optional</em>. Default chat member permissions, for groups and supergroups. Returned only in <a href="#getchat">getChat</a>.
  * @property slow_mode_delay <em>Optional</em>. For supergroups, the minimum allowed delay between consecutive messages sent by each unpriviledged user; in seconds. Returned only in <a href="#getchat">getChat</a>.
  * @property message_auto_delete_time <em>Optional</em>. The time after which all messages sent to the chat will be automatically deleted; in seconds. Returned only in <a href="#getchat">getChat</a>.
+ * @property has_protected_content <em>Optional</em>. True, if messages from the chat can't be forwarded to other chats. Returned only in <a href="#getchat">getChat</a>.
  * @property sticker_set_name <em>Optional</em>. For supergroups, name of group sticker set. Returned only in <a href="#getchat">getChat</a>.
  * @property can_set_sticker_set <em>Optional</em>. <em>True</em>, if the bot can change the group sticker set. Returned only in <a href="#getchat">getChat</a>.
  * @property linked_chat_id <em>Optional</em>. Unique identifier for the linked chat, i.e. the discussion group identifier for a channel and vice versa; for supergroups and channel chats. This identifier may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. Returned only in <a href="#getchat">getChat</a>.
@@ -147,12 +149,14 @@ data class Chat(
     val last_name: String? = null,
     val photo: ChatPhoto? = null,
     val bio: String? = null,
+    val has_private_forwards: Boolean? = null,
     val description: String? = null,
     val invite_link: String? = null,
     val pinned_message: Message? = null,
     val permissions: ChatPermissions? = null,
     val slow_mode_delay: Long? = null,
     val message_auto_delete_time: Long? = null,
+    val has_protected_content: Boolean? = null,
     val sticker_set_name: String? = null,
     val can_set_sticker_set: Boolean? = null,
     val linked_chat_id: Long? = null,
@@ -163,19 +167,21 @@ data class Chat(
  * <p>This object represents a message.</p>
  *
  * @property message_id Unique message identifier inside this chat
- * @property from <em>Optional</em>. Sender, empty for messages sent to channels
- * @property sender_chat <em>Optional</em>. Sender of the message, sent on behalf of a chat. The channel itself for channel messages. The supergroup itself for messages from anonymous group administrators. The linked channel for messages automatically forwarded to the discussion group
+ * @property from <em>Optional</em>. Sender of the message; empty for messages sent to channels. For backward compatibility, the field contains a fake sender user in non-channel chats, if the message was sent on behalf of a chat.
+ * @property sender_chat <em>Optional</em>. Sender of the message, sent on behalf of a chat. For example, the channel itself for channel posts, the supergroup itself for messages from anonymous group administrators, the linked channel for messages automatically forwarded to the discussion group. For backward compatibility, the field <em>from</em> contains a fake sender user in non-channel chats, if the message was sent on behalf of a chat.
  * @property date Date the message was sent in Unix time
  * @property chat Conversation the message belongs to
  * @property forward_from <em>Optional</em>. For forwarded messages, sender of the original message
  * @property forward_from_chat <em>Optional</em>. For messages forwarded from channels or from anonymous administrators, information about the original sender chat
  * @property forward_from_message_id <em>Optional</em>. For messages forwarded from channels, identifier of the original message in the channel
- * @property forward_signature <em>Optional</em>. For messages forwarded from channels, signature of the post author if present
+ * @property forward_signature <em>Optional</em>. For forwarded messages that were originally sent in channels or by an anonymous chat administrator, signature of the message sender if present
  * @property forward_sender_name <em>Optional</em>. Sender's name for messages forwarded from users who disallow adding a link to their account in forwarded messages
  * @property forward_date <em>Optional</em>. For forwarded messages, date the original message was sent in Unix time
+ * @property is_automatic_forward <em>Optional</em>. True, if the message is a channel post that was automatically forwarded to the connected discussion group
  * @property reply_to_message <em>Optional</em>. For replies, the original message. Note that the Message object in this field will not contain further <em>reply_to_message</em> fields even if it itself is a reply.
  * @property via_bot <em>Optional</em>. Bot through which the message was sent
  * @property edit_date <em>Optional</em>. Date the message was last edited in Unix time
+ * @property has_protected_content <em>Optional</em>. True, if the message can't be forwarded
  * @property media_group_id <em>Optional</em>. The unique identifier of a media message group this message belongs to
  * @property author_signature <em>Optional</em>. Signature of the post author for messages in channels, or the custom title of an anonymous group administrator
  * @property text <em>Optional</em>. For text messages, the actual UTF-8 text of the message, 0-4096 characters
@@ -233,9 +239,11 @@ data class Message(
     val forward_signature: String? = null,
     val forward_sender_name: String? = null,
     val forward_date: Long? = null,
+    val is_automatic_forward: Boolean? = null,
     val reply_to_message: Message? = null,
     val via_bot: User? = null,
     val edit_date: Long? = null,
+    val has_protected_content: Boolean? = null,
     val media_group_id: String? = null,
     val author_signature: String? = null,
     val text: String? = null,
@@ -294,7 +302,7 @@ data class MessageId(
 /**
  * <p>This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc.</p>
  *
- * @property type Type of the entity. Can be “mention” (<code>@username</code>), “hashtag” (<code>#hashtag</code>), “cashtag” (<code>$USD</code>), “bot_command” (<code>/start@jobs_bot</code>), “url” (<code>https://telegram.org</code>), “email” (<code>do-not-reply@telegram.org</code>), “phone_number” (<code>+1-212-555-0123</code>), “bold” (<strong>bold text</strong>), “italic” (<em>italic text</em>), “underline” (underlined text), “strikethrough” (strikethrough text), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users <a href="https://telegram.org/blog/edit#new-mentions">without usernames</a>)
+ * @property type Type of the entity. Currently, can be “mention” (<code>@username</code>), “hashtag” (<code>#hashtag</code>), “cashtag” (<code>$USD</code>), “bot_command” (<code>/start@jobs_bot</code>), “url” (<code>https://telegram.org</code>), “email” (<code>do-not-reply@telegram.org</code>), “phone_number” (<code>+1-212-555-0123</code>), “bold” (<strong>bold text</strong>), “italic” (<em>italic text</em>), “underline” (underlined text), “strikethrough” (strikethrough text), “spoiler” (spoiler message), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users <a href="https://telegram.org/blog/edit#new-mentions">without usernames</a>)
  * @property offset Offset in UTF-16 code units to the start of the entity
  * @property length Length of the entity in UTF-16 code units
  * @property url <em>Optional</em>. For “text_link” only, url that will be opened after user taps on the text
@@ -778,13 +786,13 @@ data class InlineKeyboardMarkup(
  * <p>This object represents one button of an inline keyboard. You <strong>must</strong> use exactly one of the optional fields.</p>
  *
  * @property text Label text on the button
- * @property url <em>Optional</em>. HTTP or tg:// url to be opened when button is pressed
+ * @property url <em>Optional</em>. HTTP or tg:// url to be opened when the button is pressed. Links <code>tg://user?id=&lt;user_id&gt;</code> can be used to mention a user by their ID without using a username, if this is allowed by their privacy settings.
  * @property login_url <em>Optional</em>. An HTTP URL used to automatically authorize the user. Can be used as a replacement for the <a href="https://core.telegram.org/widgets/login">Telegram Login Widget</a>.
  * @property callback_data <em>Optional</em>. Data to be sent in a <a href="#callbackquery">callback query</a> to the bot when button is pressed, 1-64 bytes
  * @property switch_inline_query <em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. Can be empty, in which case just the bot's username will be inserted.<br><br><strong>Note:</strong> This offers an easy way for users to start using your bot in <a href="/bots/inline">inline mode</a> when they are currently in a private chat with it. Especially useful when combined with <a href="#answerinlinequery"><em>switch_pm…</em></a> actions – in this case the user will be automatically returned to the chat they switched from, skipping the chat selection screen.
  * @property switch_inline_query_current_chat <em>Optional</em>. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. Can be empty, in which case only the bot's username will be inserted.<br><br>This offers a quick way for the user to open your bot in inline mode in the same chat – good for selecting something from multiple options.
  * @property callback_game <em>Optional</em>. Description of the game that will be launched when the user presses the button.<br><br><strong>NOTE:</strong> This type of button <strong>must</strong> always be the first button in the first row.
- * @property pay <em>Optional</em>. Specify <em>True</em>, to send a <a href="#payments">Pay button</a>.<br><br><strong>NOTE:</strong> This type of button <strong>must</strong> always be the first button in the first row.
+ * @property pay <em>Optional</em>. Specify <em>True</em>, to send a <a href="#payments">Pay button</a>.<br><br><strong>NOTE:</strong> This type of button <strong>must</strong> always be the first button in the first row and can only be used in invoice messages.
  *
  * @constructor Creates a [InlineKeyboardButton].
  * */
@@ -1120,8 +1128,8 @@ data class ChatLocation(
 /**
  * <p>This object represents a bot command.</p>
  *
- * @property command Text of the command, 1-32 characters. Can contain only lowercase English letters, digits and underscores.
- * @property description Description of the command, 3-256 characters.
+ * @property command Text of the command; 1-32 characters. Can contain only lowercase English letters, digits and underscores.
+ * @property description Description of the command; 1-256 characters.
  *
  * @constructor Creates a [BotCommand].
  * */
@@ -2698,6 +2706,7 @@ sealed class TelegramRequest {
      * @property entities A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>
      * @property disable_web_page_preview Disables link previews for links in this message
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2709,6 +2718,7 @@ sealed class TelegramRequest {
         val entities: List<MessageEntity>? = null,
         val disable_web_page_preview: Boolean? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2720,12 +2730,14 @@ sealed class TelegramRequest {
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the forwarded message from forwarding and saving
      * @property message_id Message identifier in the chat specified in <em>from_chat_id</em>
      * */
     data class ForwardMessageRequest(
         val chat_id: String,
         val from_chat_id: String,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val message_id: Long,
     ) : TelegramRequest()
 
@@ -2739,6 +2751,7 @@ sealed class TelegramRequest {
      * @property parse_mode Mode for parsing entities in the new caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the new caption, which can be specified instead of <em>parse_mode</em>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2751,6 +2764,7 @@ sealed class TelegramRequest {
         val parse_mode: ParseMode? = null,
         val caption_entities: List<MessageEntity>? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2765,6 +2779,7 @@ sealed class TelegramRequest {
      * @property parse_mode Mode for parsing entities in the photo caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2776,6 +2791,7 @@ sealed class TelegramRequest {
         val parse_mode: ParseMode? = null,
         val caption_entities: List<MessageEntity>? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2794,6 +2810,7 @@ sealed class TelegramRequest {
      * @property title Track name
      * @property thumb Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href="#sending-files">More info on Sending Files »</a>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2809,6 +2826,7 @@ sealed class TelegramRequest {
         val title: String? = null,
         val thumb: String? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2825,6 +2843,7 @@ sealed class TelegramRequest {
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
      * @property disable_content_type_detection Disables automatic server-side content type detection for files uploaded using multipart/form-data
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2838,6 +2857,7 @@ sealed class TelegramRequest {
         val caption_entities: List<MessageEntity>? = null,
         val disable_content_type_detection: Boolean? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2857,6 +2877,7 @@ sealed class TelegramRequest {
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
      * @property supports_streaming Pass <em>True</em>, if the uploaded video is suitable for streaming
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2873,6 +2894,7 @@ sealed class TelegramRequest {
         val caption_entities: List<MessageEntity>? = null,
         val supports_streaming: Boolean? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2891,6 +2913,7 @@ sealed class TelegramRequest {
      * @property parse_mode Mode for parsing entities in the animation caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2906,6 +2929,7 @@ sealed class TelegramRequest {
         val parse_mode: ParseMode? = null,
         val caption_entities: List<MessageEntity>? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2921,6 +2945,7 @@ sealed class TelegramRequest {
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
      * @property duration Duration of the voice message in seconds
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2933,6 +2958,7 @@ sealed class TelegramRequest {
         val caption_entities: List<MessageEntity>? = null,
         val duration: Long? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2947,6 +2973,7 @@ sealed class TelegramRequest {
      * @property length Video width and height, i.e. diameter of the video message
      * @property thumb Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href="#sending-files">More info on Sending Files »</a>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -2958,6 +2985,7 @@ sealed class TelegramRequest {
         val length: Long? = null,
         val thumb: String? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -2969,6 +2997,7 @@ sealed class TelegramRequest {
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property media A JSON-serialized array describing messages to be sent, must include 2-10 items
      * @property disable_notification Sends messages <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent messages from forwarding and saving
      * @property reply_to_message_id If the messages are a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * */
@@ -2976,6 +3005,7 @@ sealed class TelegramRequest {
         val chat_id: String,
         val media: List<InputMedia>,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
     ) : TelegramRequest()
@@ -2991,6 +3021,7 @@ sealed class TelegramRequest {
      * @property heading For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.
      * @property proximity_alert_radius For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -3004,6 +3035,7 @@ sealed class TelegramRequest {
         val heading: Long? = null,
         val proximity_alert_radius: Long? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -3062,6 +3094,7 @@ sealed class TelegramRequest {
      * @property google_place_id Google Places identifier of the venue
      * @property google_place_type Google Places type of the venue. (See <a href="https://developers.google.com/places/web-service/supported_types">supported types</a>.)
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -3077,6 +3110,7 @@ sealed class TelegramRequest {
         val google_place_id: String? = null,
         val google_place_type: String? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -3091,6 +3125,7 @@ sealed class TelegramRequest {
      * @property last_name Contact's last name
      * @property vcard Additional data about the contact in the form of a <a href="https://en.wikipedia.org/wiki/VCard">vCard</a>, 0-2048 bytes
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove keyboard or to force a reply from the user.
@@ -3102,6 +3137,7 @@ sealed class TelegramRequest {
         val last_name: String? = null,
         val vcard: String? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -3124,6 +3160,7 @@ sealed class TelegramRequest {
      * @property close_date Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 600 seconds in the future. Can't be used together with <em>open_period</em>.
      * @property is_closed Pass <em>True</em>, if the poll needs to be immediately closed. This can be useful for poll preview.
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -3143,6 +3180,7 @@ sealed class TelegramRequest {
         val close_date: Long? = null,
         val is_closed: Boolean? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -3154,6 +3192,7 @@ sealed class TelegramRequest {
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property emoji Emoji on which the dice throw animation is based. Currently, must be one of “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB2.png" width="20" height="20" alt="🎲">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EAF.png" width="20" height="20" alt="🎯">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8F80.png" width="20" height="20" alt="🏀">”, “<img class="emoji" src="//telegram.org/img/emoji/40/E29ABD.png" width="20" height="20" alt="⚽">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB3.png" width="20" height="20" alt="🎳">”, or “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB0.png" width="20" height="20" alt="🎰">”. Dice can have values 1-6 for “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB2.png" width="20" height="20" alt="🎲">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EAF.png" width="20" height="20" alt="🎯">” and “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB3.png" width="20" height="20" alt="🎳">”, values 1-5 for “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8F80.png" width="20" height="20" alt="🏀">” and “<img class="emoji" src="//telegram.org/img/emoji/40/E29ABD.png" width="20" height="20" alt="⚽">”, and values 1-64 for “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB0.png" width="20" height="20" alt="🎰">”. Defaults to “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB2.png" width="20" height="20" alt="🎲">”
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -3162,6 +3201,7 @@ sealed class TelegramRequest {
         val chat_id: String,
         val emoji: String? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -3289,6 +3329,28 @@ sealed class TelegramRequest {
         val chat_id: String,
         val user_id: Long,
         val custom_title: String,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to ban a channel chat in a supergroup or a channel. Until the chat is <a href="#unbanchatsenderchat">unbanned</a>, the owner of the banned chat won't be able to send messages on behalf of <strong>any of their channels</strong>. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
+     *
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property sender_chat_id Unique identifier of the target sender chat
+     * */
+    data class BanChatSenderChatRequest(
+        val chat_id: String,
+        val sender_chat_id: Long,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to unban a previously banned channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
+     *
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property sender_chat_id Unique identifier of the target sender chat
+     * */
+    data class UnbanChatSenderChatRequest(
+        val chat_id: String,
+        val sender_chat_id: Long,
     ) : TelegramRequest()
 
     /**
@@ -3690,6 +3752,7 @@ sealed class TelegramRequest {
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property sticker Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More info on Sending Files »</a>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>, <a href="https://core.telegram.org/bots#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
@@ -3698,6 +3761,7 @@ sealed class TelegramRequest {
         val chat_id: String,
         val sticker: String,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: KeyboardOption? = null,
@@ -3851,6 +3915,7 @@ sealed class TelegramRequest {
      * @property send_email_to_provider Pass <em>True</em>, if user's email address should be sent to provider
      * @property is_flexible Pass <em>True</em>, if the final price depends on the shipping method
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>. If empty, one 'Pay <code>total price</code>' button will be shown. If not empty, the first button must be a Pay button.
@@ -3879,6 +3944,7 @@ sealed class TelegramRequest {
         val send_email_to_provider: Boolean? = null,
         val is_flexible: Boolean? = null,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: InlineKeyboardMarkup? = null,
@@ -3935,6 +4001,7 @@ sealed class TelegramRequest {
      * @property chat_id Unique identifier for the target chat
      * @property game_short_name Short name of the game, serves as the unique identifier for the game. Set up your games via <a href="https://t.me/botfather">Botfather</a>.
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_to_message_id If the message is a reply, ID of the original message
      * @property allow_sending_without_reply Pass <em>True</em>, if the message should be sent even if the specified replied-to message is not found
      * @property reply_markup A JSON-serialized object for an <a href="https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating">inline keyboard</a>. If empty, one 'Play game_title' button will be shown. If not empty, the first button must launch the game.
@@ -3943,6 +4010,7 @@ sealed class TelegramRequest {
         val chat_id: Long,
         val game_short_name: String,
         val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
         val reply_to_message_id: Long? = null,
         val allow_sending_without_reply: Boolean? = null,
         val reply_markup: InlineKeyboardMarkup? = null,
