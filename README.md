@@ -51,24 +51,32 @@ implementation("com.github.omarmiatello.telegram:dataclass:5.7")
 ### Example with Ktor server
 
 ```kotlin
-post("/") {
-    // Endpoint for Telegram webhook. Parse the Telegram request
-    val request: Update = call.receiveText().parseTelegramRequest()
+fun main() {
+  embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
+    // Starting point for a Ktor app:
+    routing {
+      post("/") {
 
-    val inputText = request.message?.text
-    if (inputText != null) {
-        call.respondText(
+        // Endpoint for Telegram webhook. Parse the Telegram request
+        val request: Update = call.receiveText().parseTelegramRequest()
+
+        val inputText = request.message?.text
+        if (inputText != null) {
+          call.respondText(
             // Send a message back to the user
-            SendMessageRequest(
-                chat_id = request.message!!.chat.id.toString(),
-                text = "Message: ${request.message}",
-                parse_mode = ParseMode.HTML
+            TelegramRequest.SendMessageRequest(
+              chat_id = request.message!!.chat.id.toString(),
+              text = "Message: ${request.message}",
+              parse_mode = ParseMode.HTML,
             ).toJsonForResponse(),
             ContentType.Application.Json
-        )
-    }
+          )
+        }
 
-    if (call.response.status() == null) call.respond(HttpStatusCode.NoContent)
+        if (call.response.status() == null) call.respond(HttpStatusCode.NoContent)
+      }
+    }
+  }.start(wait = true)
 }
 ```
 
