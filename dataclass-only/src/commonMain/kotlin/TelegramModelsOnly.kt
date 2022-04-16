@@ -9,6 +9,8 @@ sealed class BotCommandScope : TelegramModel()
 sealed class KeyboardOption : TelegramModel()
 sealed class InputMessageContent : TelegramModel()
 sealed class VoiceChatStarted : TelegramModel()
+sealed class VideoChatStarted : TelegramModel()
+sealed class MenuButton : TelegramModel()
 data class TelegramResponse<T>(val ok: Boolean, val result: T)
 
 // --- Utility ---
@@ -68,6 +70,7 @@ data class Update(
  * @property ip_address <em>Optional</em>. Currently used webhook IP address
  * @property last_error_date <em>Optional</em>. Unix time for the most recent error that happened when trying to deliver an update via webhook
  * @property last_error_message <em>Optional</em>. Error message in human-readable format for the most recent error that happened when trying to deliver an update via webhook
+ * @property last_synchronization_error_date <em>Optional</em>. Unix time of the most recent error that happened when trying to synchronize available updates with Telegram datacenters
  * @property max_connections <em>Optional</em>. Maximum allowed number of simultaneous HTTPS connections to the webhook for update delivery
  * @property allowed_updates <em>Optional</em>. A list of update types the bot is subscribed to. Defaults to all update types except <em>chat_member</em>
  *
@@ -80,6 +83,7 @@ data class WebhookInfo(
     val ip_address: String? = null,
     val last_error_date: Long? = null,
     val last_error_message: String? = null,
+    val last_synchronization_error_date: Long? = null,
     val max_connections: Long? = null,
     val allowed_updates: List<String>? = null,
 ) : TelegramModel()
@@ -219,10 +223,11 @@ data class Chat(
  * @property connected_website <em>Optional</em>. The domain name of the website on which the user has logged in. <a href="/widgets/login">More about Telegram Login »</a>
  * @property passport_data <em>Optional</em>. Telegram Passport data
  * @property proximity_alert_triggered <em>Optional</em>. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
- * @property voice_chat_scheduled <em>Optional</em>. Service message: voice chat scheduled
- * @property voice_chat_started <em>Optional</em>. Service message: voice chat started
- * @property voice_chat_ended <em>Optional</em>. Service message: voice chat ended
- * @property voice_chat_participants_invited <em>Optional</em>. Service message: new participants invited to a voice chat
+ * @property video_chat_scheduled <em>Optional</em>. Service message: video chat scheduled
+ * @property video_chat_started <em>Optional</em>. Service message: video chat started
+ * @property video_chat_ended <em>Optional</em>. Service message: video chat ended
+ * @property video_chat_participants_invited <em>Optional</em>. Service message: new participants invited to a video chat
+ * @property web_app_data <em>Optional</em>. Service message: data sent by a Web App
  * @property reply_markup <em>Optional</em>. Inline keyboard attached to the message. <code>login_url</code> buttons are represented as ordinary <code>url</code> buttons.
  *
  * @constructor Creates a [Message].
@@ -281,10 +286,11 @@ data class Message(
     val connected_website: String? = null,
     val passport_data: PassportData? = null,
     val proximity_alert_triggered: ProximityAlertTriggered? = null,
-    val voice_chat_scheduled: VoiceChatScheduled? = null,
-    val voice_chat_started: VoiceChatStarted? = null,
-    val voice_chat_ended: VoiceChatEnded? = null,
-    val voice_chat_participants_invited: VoiceChatParticipantsInvited? = null,
+    val video_chat_scheduled: VideoChatScheduled? = null,
+    val video_chat_started: VideoChatStarted? = null,
+    val video_chat_ended: VideoChatEnded? = null,
+    val video_chat_participants_invited: VideoChatParticipantsInvited? = null,
+    val web_app_data: WebAppData? = null,
     val reply_markup: InlineKeyboardMarkup? = null,
 ) : TelegramModel()
 
@@ -621,6 +627,19 @@ data class Venue(
 ) : TelegramModel()
 
 /**
+ * <p>Contains data sent from a <a href="/bots/webapps">Web App</a> to the bot.</p>
+ *
+ * @property data The data. Be aware that a bad client can send arbitrary data in this field.
+ * @property button_text Text of the <em>web_app</em> keyboard button, from which the Web App was opened. Be aware that a bad client can send arbitrary data in this field.
+ *
+ * @constructor Creates a [WebAppData].
+ * */
+data class WebAppData(
+    val data: String,
+    val button_text: String,
+) : TelegramModel()
+
+/**
  * <p>This object represents the content of a service message, sent whenever a user in the chat triggers a proximity alert set by another user.</p>
  *
  * @property traveler User that triggered the alert
@@ -647,36 +666,36 @@ data class MessageAutoDeleteTimerChanged(
 ) : TelegramModel()
 
 /**
- * <p>This object represents a service message about a voice chat scheduled in the chat.</p>
+ * <p>This object represents a service message about a video chat scheduled in the chat.</p>
  *
- * @property start_date Point in time (Unix timestamp) when the voice chat is supposed to be started by a chat administrator
+ * @property start_date Point in time (Unix timestamp) when the video chat is supposed to be started by a chat administrator
  *
- * @constructor Creates a [VoiceChatScheduled].
+ * @constructor Creates a [VideoChatScheduled].
  * */
-data class VoiceChatScheduled(
+data class VideoChatScheduled(
     val start_date: Long,
 ) : TelegramModel()
 
 /**
- * <p>This object represents a service message about a voice chat ended in the chat.</p>
+ * <p>This object represents a service message about a video chat ended in the chat.</p>
  *
- * @property duration Voice chat duration in seconds
+ * @property duration Video chat duration in seconds
  *
- * @constructor Creates a [VoiceChatEnded].
+ * @constructor Creates a [VideoChatEnded].
  * */
-data class VoiceChatEnded(
+data class VideoChatEnded(
     val duration: Long,
 ) : TelegramModel()
 
 /**
- * <p>This object represents a service message about new members invited to a voice chat.</p>
+ * <p>This object represents a service message about new members invited to a video chat.</p>
  *
- * @property users <em>Optional</em>. New members that were invited to the voice chat
+ * @property users New members that were invited to the video chat
  *
- * @constructor Creates a [VoiceChatParticipantsInvited].
+ * @constructor Creates a [VideoChatParticipantsInvited].
  * */
-data class VoiceChatParticipantsInvited(
-    val users: List<User>? = null,
+data class VideoChatParticipantsInvited(
+    val users: List<User>,
 ) : TelegramModel()
 
 /**
@@ -712,6 +731,17 @@ data class File(
 ) : TelegramModel()
 
 /**
+ * <p>Contains information about a <a href="/bots/webapps">Web App</a>.</p>
+ *
+ * @property url An HTTPS URL of a Web App to be opened with additional data as specified in <a href="/bots/webapps#initializing-web-apps">Initializing Web Apps</a>
+ *
+ * @constructor Creates a [WebAppInfo].
+ * */
+data class WebAppInfo(
+    val url: String,
+) : TelegramModel()
+
+/**
  * <p>This object represents a <a href="https://core.telegram.org/bots#keyboards">custom keyboard</a> with reply options (see <a href="https://core.telegram.org/bots#keyboards">Introduction to bots</a> for details and examples).</p>
  *
  * @property keyboard Array of button rows, each represented by an Array of <a href="#keyboardbutton">KeyboardButton</a> objects
@@ -731,12 +761,13 @@ data class ReplyKeyboardMarkup(
 ) : KeyboardOption()
 
 /**
- * <p>This object represents one button of the reply keyboard. For simple text buttons <em>String</em> can be used instead of this object to specify text of the button. Optional fields <em>request_contact</em>, <em>request_location</em>, and <em>request_poll</em> are mutually exclusive.</p><p><strong>Note:</strong> <em>request_contact</em> and <em>request_location</em> options will only work in Telegram versions released after 9 April, 2016. Older clients will display <em>unsupported message</em>.<br><strong>Note:</strong> <em>request_poll</em> option will only work in Telegram versions released after 23 January, 2020. Older clients will display <em>unsupported message</em>.</p>
+ * <p>This object represents one button of the reply keyboard. For simple text buttons <em>String</em> can be used instead of this object to specify text of the button. Optional fields <em>web_app</em>, <em>request_contact</em>, <em>request_location</em>, and <em>request_poll</em> are mutually exclusive.</p><p><strong>Note:</strong> <em>request_contact</em> and <em>request_location</em> options will only work in Telegram versions released after 9 April, 2016. Older clients will display <em>unsupported message</em>.<br><strong>Note:</strong> <em>request_poll</em> option will only work in Telegram versions released after 23 January, 2020. Older clients will display <em>unsupported message</em>.<br><strong>Note:</strong> <em>web_app</em> option will only work in Telegram versions released after 16 April, 2022. Older clients will display <em>unsupported message</em>.</p>
  *
  * @property text Text of the button. If none of the optional fields are used, it will be sent as a message when the button is pressed
- * @property request_contact <em>Optional</em>. If <em>True</em>, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only
- * @property request_location <em>Optional</em>. If <em>True</em>, the user's current location will be sent when the button is pressed. Available in private chats only
- * @property request_poll <em>Optional</em>. If specified, the user will be asked to create a poll and send it to the bot when the button is pressed. Available in private chats only
+ * @property request_contact <em>Optional</em>. If <em>True</em>, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only.
+ * @property request_location <em>Optional</em>. If <em>True</em>, the user's current location will be sent when the button is pressed. Available in private chats only.
+ * @property request_poll <em>Optional</em>. If specified, the user will be asked to create a poll and send it to the bot when the button is pressed. Available in private chats only.
+ * @property web_app <em>Optional</em>. If specified, the described <a href="/bots/webapps">Web App</a> will be launched when the button is pressed. The Web App will be able to send a “web_app_data” service message. Available in private chats only.
  *
  * @constructor Creates a [KeyboardButton].
  * */
@@ -745,6 +776,7 @@ data class KeyboardButton(
     val request_contact: Boolean? = null,
     val request_location: Boolean? = null,
     val request_poll: KeyboardButtonPollType? = null,
+    val web_app: WebAppInfo? = null,
 ) : TelegramModel()
 
 /**
@@ -787,8 +819,9 @@ data class InlineKeyboardMarkup(
  *
  * @property text Label text on the button
  * @property url <em>Optional</em>. HTTP or tg:// url to be opened when the button is pressed. Links <code>tg://user?id=&lt;user_id&gt;</code> can be used to mention a user by their ID without using a username, if this is allowed by their privacy settings.
- * @property login_url <em>Optional</em>. An HTTP URL used to automatically authorize the user. Can be used as a replacement for the <a href="https://core.telegram.org/widgets/login">Telegram Login Widget</a>.
  * @property callback_data <em>Optional</em>. Data to be sent in a <a href="#callbackquery">callback query</a> to the bot when button is pressed, 1-64 bytes
+ * @property web_app <em>Optional</em>. Description of the <a href="/bots/webapps">Web App</a> that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href="#answerwebappquery">answerWebAppQuery</a>. Available only in private chats between a user and the bot.
+ * @property login_url <em>Optional</em>. An HTTP URL used to automatically authorize the user. Can be used as a replacement for the <a href="https://core.telegram.org/widgets/login">Telegram Login Widget</a>.
  * @property switch_inline_query <em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. Can be empty, in which case just the bot's username will be inserted.<br><br><strong>Note:</strong> This offers an easy way for users to start using your bot in <a href="/bots/inline">inline mode</a> when they are currently in a private chat with it. Especially useful when combined with <a href="#answerinlinequery"><em>switch_pm…</em></a> actions – in this case the user will be automatically returned to the chat they switched from, skipping the chat selection screen.
  * @property switch_inline_query_current_chat <em>Optional</em>. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. Can be empty, in which case only the bot's username will be inserted.<br><br>This offers a quick way for the user to open your bot in inline mode in the same chat – good for selecting something from multiple options.
  * @property callback_game <em>Optional</em>. Description of the game that will be launched when the user presses the button.<br><br><strong>NOTE:</strong> This type of button <strong>must</strong> always be the first button in the first row.
@@ -799,8 +832,9 @@ data class InlineKeyboardMarkup(
 data class InlineKeyboardButton(
     val text: String,
     val url: String? = null,
-    val login_url: LoginUrl? = null,
     val callback_data: String? = null,
+    val web_app: WebAppInfo? = null,
+    val login_url: LoginUrl? = null,
     val switch_inline_query: String? = null,
     val switch_inline_query_current_chat: String? = null,
     val callback_game: Any? = null,
@@ -918,6 +952,37 @@ data class ChatInviteLink(
 ) : TelegramModel()
 
 /**
+ * <p>Represents the rights of an administrator in a chat.</p>
+ *
+ * @property is_anonymous <em>True</em>, if the user's presence in the chat is hidden
+ * @property can_manage_chat <em>True</em>, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
+ * @property can_delete_messages <em>True</em>, if the administrator can delete messages of other users
+ * @property can_manage_video_chats <em>True</em>, if the administrator can manage video chats
+ * @property can_restrict_members <em>True</em>, if the administrator can restrict, ban or unban chat members
+ * @property can_promote_members <em>True</em>, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by the user)
+ * @property can_change_info <em>True</em>, if the user is allowed to change the chat title, photo and other settings
+ * @property can_invite_users <em>True</em>, if the user is allowed to invite new users to the chat
+ * @property can_post_messages <em>Optional</em>. <em>True</em>, if the administrator can post in the channel; channels only
+ * @property can_edit_messages <em>Optional</em>. <em>True</em>, if the administrator can edit messages of other users and can pin messages; channels only
+ * @property can_pin_messages <em>Optional</em>. <em>True</em>, if the user is allowed to pin messages; groups and supergroups only
+ *
+ * @constructor Creates a [ChatAdministratorRights].
+ * */
+data class ChatAdministratorRights(
+    val is_anonymous: Boolean,
+    val can_manage_chat: Boolean,
+    val can_delete_messages: Boolean,
+    val can_manage_video_chats: Boolean,
+    val can_restrict_members: Boolean,
+    val can_promote_members: Boolean,
+    val can_change_info: Boolean,
+    val can_invite_users: Boolean,
+    val can_post_messages: Boolean? = null,
+    val can_edit_messages: Boolean? = null,
+    val can_pin_messages: Boolean? = null,
+) : TelegramModel()
+
+/**
  * <p>Represents a <a href="#chatmember">chat member</a> that owns the chat and has all administrator privileges.</p>
  *
  * @property status The member's status in the chat, always “creator”
@@ -943,7 +1008,7 @@ data class ChatMemberOwner(
  * @property is_anonymous <em>True</em>, if the user's presence in the chat is hidden
  * @property can_manage_chat <em>True</em>, if the administrator can access the chat event log, chat statistics, message statistics in channels, see channel members, see anonymous administrators in supergroups and ignore slow mode. Implied by any other administrator privilege
  * @property can_delete_messages <em>True</em>, if the administrator can delete messages of other users
- * @property can_manage_voice_chats <em>True</em>, if the administrator can manage voice chats
+ * @property can_manage_video_chats <em>True</em>, if the administrator can manage video chats
  * @property can_restrict_members <em>True</em>, if the administrator can restrict, ban or unban chat members
  * @property can_promote_members <em>True</em>, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by the user)
  * @property can_change_info <em>True</em>, if the user is allowed to change the chat title, photo and other settings
@@ -962,7 +1027,7 @@ data class ChatMemberAdministrator(
     val is_anonymous: Boolean,
     val can_manage_chat: Boolean,
     val can_delete_messages: Boolean,
-    val can_manage_voice_chats: Boolean,
+    val can_manage_video_chats: Boolean,
     val can_restrict_members: Boolean,
     val can_promote_members: Boolean,
     val can_change_info: Boolean,
@@ -1222,6 +1287,43 @@ data class BotCommandScopeChatMember(
     val chat_id: String,
     val user_id: Long,
 ) : BotCommandScope()
+
+/**
+ * <p>Represents a menu button, which opens the bot's list of commands.</p>
+ *
+ * @property type Type of the button, must be <em>commands</em>
+ *
+ * @constructor Creates a [MenuButtonCommands].
+ * */
+data class MenuButtonCommands(
+    val type: String,
+) : MenuButton()
+
+/**
+ * <p>Represents a menu button, which launches a <a href="/bots/webapps">Web App</a>.</p>
+ *
+ * @property type Type of the button, must be <em>web_app</em>
+ * @property text Text on the button
+ * @property web_app Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href="#answerwebappquery">answerWebAppQuery</a>.
+ *
+ * @constructor Creates a [MenuButtonWebApp].
+ * */
+data class MenuButtonWebApp(
+    val type: String,
+    val text: String,
+    val web_app: WebAppInfo,
+) : MenuButton()
+
+/**
+ * <p>Describes that no specific value for the menu button was set.</p>
+ *
+ * @property type Type of the button, must be <em>default</em>
+ *
+ * @constructor Creates a [MenuButtonDefault].
+ * */
+data class MenuButtonDefault(
+    val type: String,
+) : MenuButton()
 
 /**
  * <p>Contains information about why a request was unsuccessful.</p>
@@ -2219,6 +2321,17 @@ data class ChosenInlineResult(
     val location: Location? = null,
     val inline_message_id: String? = null,
     val query: String,
+) : TelegramModel()
+
+/**
+ * <p>Contains information about an inline message sent by a <a href="/bots/webapps">Web App</a> on behalf of a user.</p>
+ *
+ * @property inline_message_id <em>Optional</em>. Identifier of the sent inline message. Available only if there is an <a href="#inlinekeyboardmarkup">inline keyboard</a> attached to the message.
+ *
+ * @constructor Creates a [SentWebAppMessage].
+ * */
+data class SentWebAppMessage(
+    val inline_message_id: String? = null,
 ) : TelegramModel()
 
 
@@ -3299,7 +3412,7 @@ sealed class TelegramRequest {
      * @property can_post_messages Pass <em>True</em>, if the administrator can create channel posts, channels only
      * @property can_edit_messages Pass <em>True</em>, if the administrator can edit messages of other users and can pin messages, channels only
      * @property can_delete_messages Pass <em>True</em>, if the administrator can delete messages of other users
-     * @property can_manage_voice_chats Pass <em>True</em>, if the administrator can manage voice chats
+     * @property can_manage_video_chats Pass <em>True</em>, if the administrator can manage video chats
      * @property can_restrict_members Pass <em>True</em>, if the administrator can restrict, ban or unban chat members
      * @property can_promote_members Pass <em>True</em>, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by him)
      * @property can_change_info Pass <em>True</em>, if the administrator can change chat title, photo and other settings
@@ -3314,7 +3427,7 @@ sealed class TelegramRequest {
         val can_post_messages: Boolean? = null,
         val can_edit_messages: Boolean? = null,
         val can_delete_messages: Boolean? = null,
-        val can_manage_voice_chats: Boolean? = null,
+        val can_manage_video_chats: Boolean? = null,
         val can_restrict_members: Boolean? = null,
         val can_promote_members: Boolean? = null,
         val can_change_info: Boolean? = null,
@@ -3644,6 +3757,46 @@ sealed class TelegramRequest {
         val language_code: String? = null,
     ) : TelegramRequest()
 
+    /**
+     * <p>Use this method to change the bot's menu button in a private chat, or the default menu button. Returns <em>True</em> on success.</p>
+     *
+     * @property chat_id Unique identifier for the target private chat. If not specified, default bot's menu button will be changed
+     * @property menu_button A JSON-serialized object for the new bot's menu button. Defaults to <a href="#menubuttondefault">MenuButtonDefault</a>
+     * */
+    data class SetChatMenuButtonRequest(
+        val chat_id: Long? = null,
+        val menu_button: MenuButton? = null,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns <a href="#menubutton">MenuButton</a> on success.</p>
+     *
+     * @property chat_id Unique identifier for the target private chat. If not specified, default bot's menu button will be returned
+     * */
+    data class GetChatMenuButtonRequest(
+        val chat_id: Long? = null,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are are free to modify the list before adding the bot. Returns <em>True</em> on success.</p>
+     *
+     * @property rights A JSON-serialized object describing new default administrator rights. If not specified, the default administrator rights will be cleared.
+     * @property for_channels Pass <em>True</em> to change the default administrator rights of the bot in channels. Otherwise, the default administrator rights of the bot for groups and supergroups will be changed.
+     * */
+    data class SetMyDefaultAdministratorRightsRequest(
+        val rights: ChatAdministratorRights? = null,
+        val for_channels: Boolean? = null,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to get the current default administrator rights of the bot. Returns <a href="#chatadministratorrights">ChatAdministratorRights</a> on success.</p>
+     *
+     * @property for_channels Pass <em>True</em> to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be returned.
+     * */
+    data class GetMyDefaultAdministratorRightsRequest(
+        val for_channels: Boolean? = null,
+    ) : TelegramRequest()
+
 
 // Updating messages
 
@@ -3795,7 +3948,7 @@ sealed class TelegramRequest {
      * <p>Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. You <strong>must</strong> use exactly one of the fields <em>png_sticker</em>, <em>tgs_sticker</em>, or <em>webm_sticker</em>. Returns <em>True</em> on success.</p>
      *
      * @property user_id User identifier of created sticker set owner
-     * @property name Short name of sticker set, to be used in <code>t.me/addstickers/</code> URLs (e.g., <em>animals</em>). Can contain only english letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in <em>“_by_&lt;bot username&gt;”</em>. <em>&lt;bot_username&gt;</em> is case insensitive. 1-64 characters.
+     * @property name Short name of sticker set, to be used in <code>t.me/addstickers/</code> URLs (e.g., <em>animals</em>). Can contain only english letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in <code>"_by_&lt;bot_username&gt;"</code>. <code>&lt;bot_username&gt;</code> is case insensitive. 1-64 characters.
      * @property title Sticker set title, 1-64 characters
      * @property png_sticker <strong>PNG</strong> image with the sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. Pass a <em>file_id</em> as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More info on Sending Files »</a>
      * @property tgs_sticker <strong>TGS</strong> animation with the sticker, uploaded using multipart/form-data. See <a href="https://core.telegram.org/stickers#animated-sticker-requirements"></a><a href="https://core.telegram.org/stickers#animated-sticker-requirements">https://core.telegram.org/stickers#animated-sticker-requirements</a> for technical requirements
@@ -3892,6 +4045,17 @@ sealed class TelegramRequest {
         val next_offset: String? = null,
         val switch_pm_text: String? = null,
         val switch_pm_parameter: String? = null,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to set the result of an interaction with a <a href="/bots/webapps">Web App</a> and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a <a href="#sentwebappmessage">SentWebAppMessage</a> object is returned.</p>
+     *
+     * @property web_app_query_id Unique identifier for the query to be answered
+     * @property result A JSON-serialized object describing the message to be sent
+     * */
+    data class AnswerWebAppQueryRequest(
+        val web_app_query_id: String,
+        val result: InlineQueryResult,
     ) : TelegramRequest()
 
 

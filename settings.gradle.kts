@@ -5,4 +5,5 @@ include(
     "dataclass",
     "client",
     "sample",
+    "ktor-sample",
 )

@@ -1110,7 +1110,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property can_post_messages Pass <em>True</em>, if the administrator can create channel posts, channels only
      * @property can_edit_messages Pass <em>True</em>, if the administrator can edit messages of other users and can pin messages, channels only
      * @property can_delete_messages Pass <em>True</em>, if the administrator can delete messages of other users
-     * @property can_manage_voice_chats Pass <em>True</em>, if the administrator can manage voice chats
+     * @property can_manage_video_chats Pass <em>True</em>, if the administrator can manage video chats
      * @property can_restrict_members Pass <em>True</em>, if the administrator can restrict, ban or unban chat members
      * @property can_promote_members Pass <em>True</em>, if the administrator can add new administrators with a subset of their own privileges or demote administrators that he has promoted, directly or indirectly (promoted by administrators that were appointed by him)
      * @property can_change_info Pass <em>True</em>, if the administrator can change chat title, photo and other settings
@@ -1127,7 +1127,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         can_post_messages: Boolean? = null,
         can_edit_messages: Boolean? = null,
         can_delete_messages: Boolean? = null,
-        can_manage_voice_chats: Boolean? = null,
+        can_manage_video_chats: Boolean? = null,
         can_restrict_members: Boolean? = null,
         can_promote_members: Boolean? = null,
         can_change_info: Boolean? = null,
@@ -1143,7 +1143,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             can_post_messages,
             can_edit_messages,
             can_delete_messages,
-            can_manage_voice_chats,
+            can_manage_video_chats,
             can_restrict_members,
             can_promote_members,
             can_change_info,
@@ -1732,6 +1732,80 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ListSerializer(BotCommand.serializer())
     )
 
+    /**
+     * <p>Use this method to change the bot's menu button in a private chat, or the default menu button. Returns <em>True</em> on success.</p>
+     *
+     * @property chat_id Unique identifier for the target private chat. If not specified, default bot's menu button will be changed
+     * @property menu_button A JSON-serialized object for the new bot's menu button. Defaults to <a href="#menubuttondefault">MenuButtonDefault</a>
+     *
+     * @return [Boolean]
+     * */
+    suspend fun setChatMenuButton(
+        chat_id: Long? = null,
+        menu_button: MenuButton? = null,
+    ) = telegramPost(
+        "$basePath/setChatMenuButton",
+        SetChatMenuButtonRequest(
+            chat_id,
+            menu_button,
+        ).toJsonForRequest(),
+        Boolean.serializer()
+    )
+
+    /**
+     * <p>Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns <a href="#menubutton">MenuButton</a> on success.</p>
+     *
+     * @property chat_id Unique identifier for the target private chat. If not specified, default bot's menu button will be returned
+     *
+     * @return [MenuButton]
+     * */
+    suspend fun getChatMenuButton(
+        chat_id: Long? = null,
+    ) = telegramPost(
+        "$basePath/getChatMenuButton",
+        GetChatMenuButtonRequest(
+            chat_id,
+        ).toJsonForRequest(),
+        MenuButton.serializer()
+    )
+
+    /**
+     * <p>Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are are free to modify the list before adding the bot. Returns <em>True</em> on success.</p>
+     *
+     * @property rights A JSON-serialized object describing new default administrator rights. If not specified, the default administrator rights will be cleared.
+     * @property for_channels Pass <em>True</em> to change the default administrator rights of the bot in channels. Otherwise, the default administrator rights of the bot for groups and supergroups will be changed.
+     *
+     * @return [Boolean]
+     * */
+    suspend fun setMyDefaultAdministratorRights(
+        rights: ChatAdministratorRights? = null,
+        for_channels: Boolean? = null,
+    ) = telegramPost(
+        "$basePath/setMyDefaultAdministratorRights",
+        SetMyDefaultAdministratorRightsRequest(
+            rights,
+            for_channels,
+        ).toJsonForRequest(),
+        Boolean.serializer()
+    )
+
+    /**
+     * <p>Use this method to get the current default administrator rights of the bot. Returns <a href="#chatadministratorrights">ChatAdministratorRights</a> on success.</p>
+     *
+     * @property for_channels Pass <em>True</em> to get default administrator rights of the bot in channels. Otherwise, default administrator rights of the bot for groups and supergroups will be returned.
+     *
+     * @return [ChatAdministratorRights]
+     * */
+    suspend fun getMyDefaultAdministratorRights(
+        for_channels: Boolean? = null,
+    ) = telegramPost(
+        "$basePath/getMyDefaultAdministratorRights",
+        GetMyDefaultAdministratorRightsRequest(
+            for_channels,
+        ).toJsonForRequest(),
+        ChatAdministratorRights.serializer()
+    )
+
 // Updating messages
 
     /**
@@ -1983,7 +2057,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * <p>Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. You <strong>must</strong> use exactly one of the fields <em>png_sticker</em>, <em>tgs_sticker</em>, or <em>webm_sticker</em>. Returns <em>True</em> on success.</p>
      *
      * @property user_id User identifier of created sticker set owner
-     * @property name Short name of sticker set, to be used in <code>t.me/addstickers/</code> URLs (e.g., <em>animals</em>). Can contain only english letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in <em>“_by_&lt;bot username&gt;”</em>. <em>&lt;bot_username&gt;</em> is case insensitive. 1-64 characters.
+     * @property name Short name of sticker set, to be used in <code>t.me/addstickers/</code> URLs (e.g., <em>animals</em>). Can contain only english letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in <code>"_by_&lt;bot_username&gt;"</code>. <code>&lt;bot_username&gt;</code> is case insensitive. 1-64 characters.
      * @property title Sticker set title, 1-64 characters
      * @property png_sticker <strong>PNG</strong> image with the sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. Pass a <em>file_id</em> as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More info on Sending Files »</a>
      * @property tgs_sticker <strong>TGS</strong> animation with the sticker, uploaded using multipart/form-data. See <a href="https://core.telegram.org/stickers#animated-sticker-requirements"></a><a href="https://core.telegram.org/stickers#animated-sticker-requirements">https://core.telegram.org/stickers#animated-sticker-requirements</a> for technical requirements
@@ -2150,6 +2224,26 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             switch_pm_parameter,
         ).toJsonForRequest(),
         Boolean.serializer()
+    )
+
+    /**
+     * <p>Use this method to set the result of an interaction with a <a href="/bots/webapps">Web App</a> and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a <a href="#sentwebappmessage">SentWebAppMessage</a> object is returned.</p>
+     *
+     * @property web_app_query_id Unique identifier for the query to be answered
+     * @property result A JSON-serialized object describing the message to be sent
+     *
+     * @return [SentWebAppMessage]
+     * */
+    suspend fun answerWebAppQuery(
+        web_app_query_id: String,
+        result: InlineQueryResult,
+    ) = telegramPost(
+        "$basePath/answerWebAppQuery",
+        AnswerWebAppQueryRequest(
+            web_app_query_id,
+            result,
+        ).toJsonForRequest(),
+        SentWebAppMessage.serializer()
     )
 
 // Payments

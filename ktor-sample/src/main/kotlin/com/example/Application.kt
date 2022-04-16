@@ -13,7 +13,7 @@ fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         // Starting point for a Ktor app:
         routing {
-            get("/") {
+            post("/") {
 
                 // Endpoint for Telegram webhook. Parse the Telegram request
                 val request: Update = call.receiveText().parseTelegramRequest()
