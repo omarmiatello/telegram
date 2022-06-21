@@ -9,7 +9,6 @@ kotlin {
     sourceSets {
         all {
             languageSettings.apply {
-                useExperimentalAnnotation("kotlin.RequiresOptIn")
                 progressiveMode = true
             }
         }

@@ -8,8 +8,8 @@ kotlin {
         commonMain = {
             dependencies {
                 api(project(":dataclass"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
-                implementation("io.ktor:ktor-client-core:1.5.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+                implementation("io.ktor:ktor-client-core:2.0.2")
             }
         },
         logger = logger,
@@ -18,8 +18,8 @@ kotlin {
 //        val commonMain by getting {
 //            dependencies {
 //                api(project(":dataclass"))
-//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
-//                implementation("io.ktor:ktor-client-core:1.5.1")
+//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+//                implementation("io.ktor:ktor-client-core:2.0.2")
 //            }
 //        }
 //        // val commonTest by getting {

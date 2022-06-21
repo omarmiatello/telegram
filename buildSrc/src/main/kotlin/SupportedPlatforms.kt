@@ -20,7 +20,7 @@ fun KotlinMultiplatformExtension.addKMTargets(logger: Logger) {
     targets {
         jvm {
             compilations.all {
-                kotlinOptions.jvmTarget = "1.8"
+                kotlinOptions.jvmTarget = "13"
             }
             testRuns["test"].executionTask.configure {
                 useJUnit()

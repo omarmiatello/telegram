@@ -5,7 +5,7 @@
 Full API documentation of Telegram Bot API
 https://core.telegram.org/bots/api
 
-**Library API version 6.0**
+**Library API version 6.1**
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
@@ -32,7 +32,7 @@ Published on Maven Central:
 
 ![](https://kotlinlang.org/docs/images/kotlin-multiplatform.png)
 
-Learn more about [Kotlin Mutliplatform benefits](https://kotlinlang.org/docs/multiplatform.html).
+Learn more about [Kotlin Multiplatform benefits](https://kotlinlang.org/docs/multiplatform.html).
 
 ## How to use `dataclass` module
 
@@ -45,10 +45,10 @@ This module contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:6.0")
+implementation("com.github.omarmiatello.telegram:dataclass:6.1")
 ```
 
-### Example with Ktor 2.0 - server
+### Example 1 - Ktor 2.0 server
 
 Please start from https://start.ktor.io/
 
@@ -81,6 +81,35 @@ fun main() {
       }
     }
   }.start(wait = true)
+}
+```
+
+### Example 2 - GitHub Actions using Kotlin Script
+
+See [https://github.com/omarmiatello/github-actions-kotlin-script-template](https://github.com/omarmiatello/github-actions-kotlin-script-template)
+
+```kotlin
+#!/usr/bin/env kotlin
+@file:Repository("https://repo.maven.apache.org/maven2")
+@file:DependsOn("com.github.omarmiatello.kotlin-script-toolbox:zero-setup:0.0.3")
+@file:DependsOn("com.github.omarmiatello.telegram:client-jvm:6.0")
+@file:DependsOn("io.ktor:ktor-client-okhttp-jvm:2.0.2")  // required for com.github.omarmiatello.telegram:client
+
+import com.github.omarmiatello.kotlinscripttoolbox.core.launchKotlinScriptToolbox
+import com.github.omarmiatello.telegram.TelegramClient
+import kotlin.system.exitProcess
+
+launchKotlinScriptToolbox(scriptName = "Telegram example") {
+    // Set up: Telegram notification
+    val telegramClient = TelegramClient(apiKey = readSystemPropertyOrNull("TELEGRAM_BOT_APIKEY")!!)
+    val defaultChatId = readSystemPropertyOrNull("TELEGRAM_CHAT_ID")!!
+    suspend fun sendTelegramMessage(text: String, chatId: String = defaultChatId) {
+        println("💬 $text")
+        telegramClient.sendMessage(chat_id = chatId, text = text)
+    }
+
+    // Send notification
+    sendTelegramMessage("Hello world!")
 }
 ```
 
@@ -189,7 +218,7 @@ This module contains only 2 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:6.0")
+implementation("com.github.omarmiatello.telegram:client:6.1")
 ```
 
 ### Send a message to a user/group/channel
@@ -255,13 +284,13 @@ NOTE: Not for beginner. Guide [here](docs/dataclass-only.md).
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // alternative, contains: `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:6.0")
+implementation("com.github.omarmiatello.telegram:client:6.1")
 
 // alternative, contains only: `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:6.0")
+implementation("com.github.omarmiatello.telegram:dataclass:6.1")
 
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
-implementation("com.github.omarmiatello.telegram:dataclass-only:6.0")
+implementation("com.github.omarmiatello.telegram:dataclass-only:6.1")
 ```
 
 ## License
