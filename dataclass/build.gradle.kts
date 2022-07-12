@@ -8,7 +8,7 @@ kotlin {
     addKMSources(
         commonMain = {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
             }
         },
         logger = logger,
@@ -16,7 +16,7 @@ kotlin {
 //    sourceSets {
 //        val commonMain by getting {
 //            dependencies {
-//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
 //            }
 //        }
 ////        val commonTest by getting {

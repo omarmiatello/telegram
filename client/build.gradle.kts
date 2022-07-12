@@ -8,7 +8,7 @@ kotlin {
         commonMain = {
             dependencies {
                 api(project(":dataclass"))
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
                 implementation("io.ktor:ktor-client-core:1.5.1")
             }
         },
@@ -18,7 +18,7 @@ kotlin {
 //        val commonMain by getting {
 //            dependencies {
 //                api(project(":dataclass"))
-//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
+//                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
 //                implementation("io.ktor:ktor-client-core:1.5.1")
 //            }
 //        }
