@@ -185,7 +185,7 @@ object MenuButtonSerializer : KSerializer<MenuButton> {
 }
 
 @Serializable
-data class TelegramResponse<T>(val ok: Boolean, val result: T)
+data class TelegramResponse<T>(val ok: Boolean, val result: T? = null)
 
 // --- Utility ---
 

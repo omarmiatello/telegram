@@ -5,7 +5,7 @@
 Full API documentation of Telegram Bot API
 https://core.telegram.org/bots/api
 
-**Library API version 6.1**
+**Library API version 6.1.1**
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
@@ -45,7 +45,7 @@ This module contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:6.1")
+implementation("com.github.omarmiatello.telegram:dataclass:6.1.1")
 ```
 
 ### Example 1 - Ktor 2.0 server
@@ -218,7 +218,7 @@ This module contains only 2 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:6.1")
+implementation("com.github.omarmiatello.telegram:client:6.1.1")
 ```
 
 ### Send a message to a user/group/channel
@@ -284,13 +284,13 @@ NOTE: Not for beginner. Guide [here](docs/dataclass-only.md).
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // alternative, contains: `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:6.1")
+implementation("com.github.omarmiatello.telegram:client:6.1.1")
 
 // alternative, contains only: `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:6.1")
+implementation("com.github.omarmiatello.telegram:dataclass:6.1.1")
 
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
-implementation("com.github.omarmiatello.telegram:dataclass-only:6.1")
+implementation("com.github.omarmiatello.telegram:dataclass-only:6.1.1")
 ```
 
 ## License
