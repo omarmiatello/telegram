@@ -8,13 +8,13 @@
     ReactionTypeSerializer::class,
     MessageOriginSerializer::class,
     ChatBoostSourceSerializer::class,
+    MenuButtonSerializer::class,
     InputFileOrStringSerializer::class,
     IntegerOrStringSerializer::class,
     KeyboardOptionSerializer::class,
     MaybeInaccessibleMessageSerializer::class,
     VoiceChatStartedSerializer::class,
     VideoChatStartedSerializer::class,
-    MenuButtonSerializer::class,
 )
 
 package com.github.omarmiatello.telegram
@@ -57,7 +57,14 @@ object InputMediaSerializer : KSerializer<InputMedia> {
 sealed class InputMessageContent : TelegramModel()
 object InputMessageContentSerializer : KSerializer<InputMessageContent> {
     override val descriptor: SerialDescriptor = InputMessageContent.serializer().descriptor
-    override fun serialize(encoder: Encoder, value: InputMessageContent) = TODO()
+    override fun serialize(encoder: Encoder, value: InputMessageContent) = when (value) {
+        is InputTextMessageContent -> encoder.encodeSerializableValue(serializer(), value)
+        is InputLocationMessageContent -> encoder.encodeSerializableValue(serializer(), value)
+        is InputVenueMessageContent -> encoder.encodeSerializableValue(serializer(), value)
+        is InputContactMessageContent -> encoder.encodeSerializableValue(serializer(), value)
+        is InputInvoiceMessageContent -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
     override fun deserialize(decoder: Decoder): InputMessageContent = TODO()
 }
 
@@ -66,7 +73,6 @@ sealed class InlineQueryResult : TelegramModel()
 object InlineQueryResultSerializer : KSerializer<InlineQueryResult> {
     override val descriptor: SerialDescriptor = InlineQueryResult.serializer().descriptor
     override fun serialize(encoder: Encoder, value: InlineQueryResult) = when (value) {
-        is InlineQueryResultsButton -> encoder.encodeSerializableValue(serializer(), value)
         is InlineQueryResultArticle -> encoder.encodeSerializableValue(serializer(), value)
         is InlineQueryResultPhoto -> encoder.encodeSerializableValue(serializer(), value)
         is InlineQueryResultGif -> encoder.encodeSerializableValue(serializer(), value)
@@ -185,6 +191,19 @@ object ChatBoostSourceSerializer : KSerializer<ChatBoostSource> {
 }
 
 @Serializable
+sealed class MenuButton : TelegramModel()
+object MenuButtonSerializer : KSerializer<MenuButton> {
+    override val descriptor: SerialDescriptor = MenuButton.serializer().descriptor
+    override fun serialize(encoder: Encoder, value: MenuButton) = when (value) {
+        is MenuButtonCommands -> encoder.encodeSerializableValue(serializer(), value)
+        is MenuButtonWebApp -> encoder.encodeSerializableValue(serializer(), value)
+        is MenuButtonDefault -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
+    override fun deserialize(decoder: Decoder): MenuButton = TODO()
+}
+
+@Serializable
 sealed class InputFileOrString : TelegramModel()
 object InputFileOrStringSerializer : KSerializer<InputFileOrString> {
     override val descriptor: SerialDescriptor = InputFileOrString.serializer().descriptor
@@ -240,19 +259,6 @@ object VideoChatStartedSerializer : KSerializer<VideoChatStarted> {
     override val descriptor: SerialDescriptor = VideoChatStarted.serializer().descriptor
     override fun serialize(encoder: Encoder, value: VideoChatStarted) = TODO()
     override fun deserialize(decoder: Decoder): VideoChatStarted = TODO()
-}
-
-@Serializable
-sealed class MenuButton : TelegramModel()
-object MenuButtonSerializer : KSerializer<MenuButton> {
-    override val descriptor: SerialDescriptor = MenuButton.serializer().descriptor
-    override fun serialize(encoder: Encoder, value: MenuButton) = when (value) {
-        is MenuButtonCommands -> encoder.encodeSerializableValue(serializer(), value)
-        is MenuButtonWebApp -> encoder.encodeSerializableValue(serializer(), value)
-        is MenuButtonDefault -> encoder.encodeSerializableValue(serializer(), value)
-    }
-
-    override fun deserialize(decoder: Decoder): MenuButton = TODO()
 }
 
 @Serializable
@@ -3647,7 +3653,7 @@ data class InlineQueryResultsButton(
     val text: String,
     val web_app: WebAppInfo? = null,
     val start_parameter: String? = null,
-) : InlineQueryResult() {
+) : TelegramModel() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {
@@ -4425,7 +4431,7 @@ data class InputTextMessageContent(
     val parse_mode: ParseMode? = null,
     val entities: List<MessageEntity>? = null,
     val link_preview_options: LinkPreviewOptions? = null,
-) : TelegramModel() {
+) : InputMessageContent() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {
@@ -4453,7 +4459,7 @@ data class InputLocationMessageContent(
     val live_period: Long? = null,
     val heading: Long? = null,
     val proximity_alert_radius: Long? = null,
-) : TelegramModel() {
+) : InputMessageContent() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {
@@ -4485,7 +4491,7 @@ data class InputVenueMessageContent(
     val foursquare_type: String? = null,
     val google_place_id: String? = null,
     val google_place_type: String? = null,
-) : TelegramModel() {
+) : InputMessageContent() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {
@@ -4509,7 +4515,7 @@ data class InputContactMessageContent(
     val first_name: String,
     val last_name: String? = null,
     val vcard: String? = null,
-) : TelegramModel() {
+) : InputMessageContent() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {
@@ -4565,7 +4571,7 @@ data class InputInvoiceMessageContent(
     val send_phone_number_to_provider: Boolean? = null,
     val send_email_to_provider: Boolean? = null,
     val is_flexible: Boolean? = null,
-) : TelegramModel() {
+) : InputMessageContent() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {

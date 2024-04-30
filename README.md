@@ -5,7 +5,7 @@
 Full API documentation of Telegram Bot API
 https://core.telegram.org/bots/api
 
-**Library API version 7.2**
+**Library API version 7.2.1**
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
@@ -17,7 +17,7 @@ This library has 3 modules:
 - Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/commonMain/kotlin/TelegramClient.kt))
   - 170 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 119 method for Telegram bot API
   - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
-- Module [:dataclass-only:](#how-to-use-dataclass-only-module)
+- Module [:dataclass-only:](#how-to-use-dataclass-only-module) **(not recommended)**
   - 170 `data class` only (serializer not included)
   - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/commonMain/kotlin/TelegramModelsOnly.kt)
   - Could be used with [Gson](https://github.com/google/gson) or plain Java / Kotlin project.
@@ -45,10 +45,10 @@ This module contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:7.2")
+implementation("com.github.omarmiatello.telegram:dataclass:7.2.1")
 ```
 
-### Example 1 - Ktor 2.0 server
+### Example 1 - Ktor 3.0 server
 
 Please start from https://start.ktor.io/
 
@@ -56,31 +56,52 @@ See [Application.kt](ktor-sample/src/main/kotlin/com/example/Application.kt)
 
 ```kotlin
 fun main() {
-  embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
-    // Starting point for a Ktor app:
-    routing {
-      post("/") {
+  embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
+    .start(wait = true)
+}
 
+fun Application.module() {
+  routing {
+    post("/") {
+      var request: Update? = null
+      try {
         // Endpoint for Telegram webhook. Parse the Telegram request
-        val request: Update = call.receiveText().parseTelegramRequest()
+        request = call.receiveText().parseTelegramRequest()
 
-        val inputText = request.message?.text
-        if (inputText != null) {
-          call.respondText(
-            // Send a message back to the user
-            TelegramRequest.SendMessageRequest(
-              chat_id = request.message!!.chat.id.toString(),
-              text = "Message: ${request.message}",
-              parse_mode = ParseMode.HTML,
-            ).toJsonForResponse(),
-            ContentType.Application.Json
+        telegramRequest(request)
+      } catch (e: Exception) {
+        val text = e.stackTraceToString()
+        val message = request?.message
+        val chatId = message?.chat?.id?.toString()
+        if (chatId != null) {
+          call.respond(
+            SendMessageRequest(
+              chat_id = chatId,
+              text = "```\n$text\n```",
+              parse_mode = ParseMode.Markdown,
+              reply_parameters = ReplyParameters(
+                message_id = message.message_id
+              )
+            )
           )
         }
-
-        if (call.response.status() == null) call.respond(HttpStatusCode.NoContent)
       }
+
+      if (call.response.status() == null) call.respond(HttpStatusCode.NoContent)
     }
-  }.start(wait = true)
+  }
+}
+
+suspend fun RoutingContext.telegramRequest(request: Update) {
+  call.respondText(
+    // Send a message back to the user
+    TelegramRequest.SendMessageRequest(
+      chat_id = request.message!!.chat.id.toString(),
+      text = "Message: ${request.message}\n\n```\n$request\n```",
+      parse_mode = ParseMode.Markdown,
+    ).toJsonForResponse(),
+    ContentType.Application.Json
+  )
 }
 ```
 
@@ -218,7 +239,7 @@ This module contains only 2 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:7.2")
+implementation("com.github.omarmiatello.telegram:client:7.2.1")
 ```
 
 ### Send a message to a user/group/channel
@@ -284,13 +305,13 @@ NOTE: Not for beginner. Guide [here](docs/dataclass-only.md).
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // alternative, contains: `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:7.2")
+implementation("com.github.omarmiatello.telegram:client:7.2.1")
 
 // alternative, contains only: `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:7.2")
+implementation("com.github.omarmiatello.telegram:dataclass:7.2.1")
 
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
-implementation("com.github.omarmiatello.telegram:dataclass-only:7.2")
+implementation("com.github.omarmiatello.telegram:dataclass-only:7.2.1")
 ```
 
 ## License

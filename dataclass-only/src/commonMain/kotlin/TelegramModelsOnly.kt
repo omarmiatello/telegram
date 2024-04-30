@@ -10,13 +10,13 @@ sealed class BotCommandScope : TelegramModel()
 sealed class ReactionType : TelegramModel()
 sealed class MessageOrigin : TelegramModel()
 sealed class ChatBoostSource : TelegramModel()
+sealed class MenuButton : TelegramModel()
 sealed class InputFileOrString : TelegramModel()
 sealed class IntegerOrString : TelegramModel()
 sealed class KeyboardOption : TelegramModel()
 sealed class MaybeInaccessibleMessage : TelegramModel()
 sealed class VoiceChatStarted : TelegramModel()
 sealed class VideoChatStarted : TelegramModel()
-sealed class MenuButton : TelegramModel()
 data class TelegramResponse<T>(val ok: Boolean, val result: T? = null)
 
 // --- Utility ---
@@ -2565,7 +2565,7 @@ data class InlineQueryResultsButton(
     val text: String,
     val web_app: WebAppInfo? = null,
     val start_parameter: String? = null,
-) : InlineQueryResult()
+) : TelegramModel()
 
 /**
  * <p>Represents a link to an article or web page.</p>
@@ -3196,7 +3196,7 @@ data class InputTextMessageContent(
     val parse_mode: ParseMode? = null,
     val entities: List<MessageEntity>? = null,
     val link_preview_options: LinkPreviewOptions? = null,
-) : TelegramModel()
+) : InputMessageContent()
 
 /**
  * <p>Represents the <a href="#inputmessagecontent">content</a> of a location message to be sent as the result of an inline query.</p>
@@ -3217,7 +3217,7 @@ data class InputLocationMessageContent(
     val live_period: Long? = null,
     val heading: Long? = null,
     val proximity_alert_radius: Long? = null,
-) : TelegramModel()
+) : InputMessageContent()
 
 /**
  * <p>Represents the <a href="#inputmessagecontent">content</a> of a venue message to be sent as the result of an inline query.</p>
@@ -3242,7 +3242,7 @@ data class InputVenueMessageContent(
     val foursquare_type: String? = null,
     val google_place_id: String? = null,
     val google_place_type: String? = null,
-) : TelegramModel()
+) : InputMessageContent()
 
 /**
  * <p>Represents the <a href="#inputmessagecontent">content</a> of a contact message to be sent as the result of an inline query.</p>
@@ -3259,7 +3259,7 @@ data class InputContactMessageContent(
     val first_name: String,
     val last_name: String? = null,
     val vcard: String? = null,
-) : TelegramModel()
+) : InputMessageContent()
 
 /**
  * <p>Represents the <a href="#inputmessagecontent">content</a> of an invoice message to be sent as the result of an inline query.</p>
@@ -3308,7 +3308,7 @@ data class InputInvoiceMessageContent(
     val send_phone_number_to_provider: Boolean? = null,
     val send_email_to_provider: Boolean? = null,
     val is_flexible: Boolean? = null,
-) : TelegramModel()
+) : InputMessageContent()
 
 /**
  * <p>Represents a <a href="#inlinequeryresult">result</a> of an inline query that was chosen by the user and sent to their chat partner.</p><p><strong>Note:</strong> It is necessary to enable <a href="/bots/inline#collecting-feedback">inline feedback</a> via <a href="https://t.me/botfather">@BotFather</a> in order to receive these objects in updates.</p>
