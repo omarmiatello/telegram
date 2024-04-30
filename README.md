@@ -93,15 +93,19 @@ fun Application.module() {
 }
 
 suspend fun RoutingContext.telegramRequest(request: Update) {
-  call.respondText(
+  call.respond(
     // Send a message back to the user
     TelegramRequest.SendMessageRequest(
       chat_id = request.message!!.chat.id.toString(),
       text = "Message: ${request.message}\n\n```\n$request\n```",
       parse_mode = ParseMode.Markdown,
-    ).toJsonForResponse(),
-    ContentType.Application.Json
+    )
   )
+}
+
+
+suspend inline fun RoutingCall.respond(response: TelegramRequest) {
+  respondText(text = response.toJsonForResponse(), contentType = ContentType.Application.Json)
 }
 ```
 
@@ -113,8 +117,8 @@ See [https://github.com/omarmiatello/github-actions-kotlin-script-template](http
 #!/usr/bin/env kotlin
 @file:Repository("https://repo.maven.apache.org/maven2")
 @file:DependsOn("com.github.omarmiatello.kotlin-script-toolbox:zero-setup:0.0.3")
-@file:DependsOn("com.github.omarmiatello.telegram:client-jvm:6.0")
-@file:DependsOn("io.ktor:ktor-client-okhttp-jvm:2.0.2")  // required for com.github.omarmiatello.telegram:client
+@file:DependsOn("com.github.omarmiatello.telegram:client-jvm:7.2.1")
+@file:DependsOn("io.ktor:ktor-client-okhttp-jvm:3.0.0")  // required for com.github.omarmiatello.telegram:client
 
 import com.github.omarmiatello.kotlinscripttoolbox.core.launchKotlinScriptToolbox
 import com.github.omarmiatello.telegram.TelegramClient
@@ -146,41 +150,63 @@ The `Update` object has some properties:
 /**
  * <p>This <a href="#available-types">object</a> represents an incoming update.<br>At most <strong>one</strong> of the optional parameters can be present in any given update.</p>
  *
- * @property update_id The update‘s unique identifier. Update identifiers start from a certain positive number and increase sequentially. This ID becomes especially handy if you’re using <a href="#setwebhook">Webhooks</a>, since it allows you to ignore repeated updates or to restore the correct update sequence, should they get out of order. If there are no new updates for at least a week, then identifier of the next update will be chosen randomly instead of sequentially.
- * @property message <em>Optional</em>. New incoming message of any kind — text, photo, sticker, etc.
- * @property edited_message <em>Optional</em>. New version of a message that is known to the bot and was edited
- * @property channel_post <em>Optional</em>. New incoming channel post of any kind — text, photo, sticker, etc.
- * @property edited_channel_post <em>Optional</em>. New version of a channel post that is known to the bot and was edited
+ * @property update_id The update's unique identifier. Update identifiers start from a certain positive number and increase sequentially. This identifier becomes especially handy if you're using <a href="#setwebhook">webhooks</a>, since it allows you to ignore repeated updates or to restore the correct update sequence, should they get out of order. If there are no new updates for at least a week, then identifier of the next update will be chosen randomly instead of sequentially.
+ * @property message <em>Optional</em>. New incoming message of any kind - text, photo, sticker, etc.
+ * @property edited_message <em>Optional</em>. New version of a message that is known to the bot and was edited. This update may at times be triggered by changes to message fields that are either unavailable or not actively used by your bot.
+ * @property channel_post <em>Optional</em>. New incoming channel post of any kind - text, photo, sticker, etc.
+ * @property edited_channel_post <em>Optional</em>. New version of a channel post that is known to the bot and was edited. This update may at times be triggered by changes to message fields that are either unavailable or not actively used by your bot.
+ * @property business_connection <em>Optional</em>. The bot was connected to or disconnected from a business account, or a user edited an existing connection with the bot
+ * @property business_message <em>Optional</em>. New non-service message from a connected business account
+ * @property edited_business_message <em>Optional</em>. New version of a message from a connected business account
+ * @property deleted_business_messages <em>Optional</em>. Messages were deleted from a connected business account
+ * @property message_reaction <em>Optional</em>. A reaction to a message was changed by a user. The bot must be an administrator in the chat and must explicitly specify <code>"message_reaction"</code> in the list of <em>allowed_updates</em> to receive these updates. The update isn't received for reactions set by bots.
+ * @property message_reaction_count <em>Optional</em>. Reactions to a message with anonymous reactions were changed. The bot must be an administrator in the chat and must explicitly specify <code>"message_reaction_count"</code> in the list of <em>allowed_updates</em> to receive these updates. The updates are grouped and can be sent with delay up to a few minutes.
  * @property inline_query <em>Optional</em>. New incoming <a href="#inline-mode">inline</a> query
  * @property chosen_inline_result <em>Optional</em>. The result of an <a href="#inline-mode">inline</a> query that was chosen by a user and sent to their chat partner. Please see our documentation on the <a href="/bots/inline#collecting-feedback">feedback collecting</a> for details on how to enable these updates for your bot.
  * @property callback_query <em>Optional</em>. New incoming callback query
  * @property shipping_query <em>Optional</em>. New incoming shipping query. Only for invoices with flexible price
  * @property pre_checkout_query <em>Optional</em>. New incoming pre-checkout query. Contains full information about checkout
- * @property poll <em>Optional</em>. New poll state. Bots receive only updates about stopped polls and polls, which are sent by the bot
+ * @property poll <em>Optional</em>. New poll state. Bots receive only updates about manually stopped polls and polls, which are sent by the bot
  * @property poll_answer <em>Optional</em>. A user changed their answer in a non-anonymous poll. Bots receive new votes only in polls that were sent by the bot itself.
+ * @property my_chat_member <em>Optional</em>. The bot's chat member status was updated in a chat. For private chats, this update is received only when the bot is blocked or unblocked by the user.
+ * @property chat_member <em>Optional</em>. A chat member's status was updated in a chat. The bot must be an administrator in the chat and must explicitly specify <code>"chat_member"</code> in the list of <em>allowed_updates</em> to receive these updates.
+ * @property chat_join_request <em>Optional</em>. A request to join the chat has been sent. The bot must have the <em>can_invite_users</em> administrator right in the chat to receive these updates.
+ * @property chat_boost <em>Optional</em>. A chat boost was added or changed. The bot must be an administrator in the chat to receive these updates.
+ * @property removed_chat_boost <em>Optional</em>. A boost was removed from a chat. The bot must be an administrator in the chat to receive these updates.
  *
  * @constructor Creates a [Update].
  * */
 @Serializable
 data class Update(
-    val update_id: Int,
-    val message: Message? = null,
-    val edited_message: Message? = null,
-    val channel_post: Message? = null,
-    val edited_channel_post: Message? = null,
-    val inline_query: InlineQuery? = null,
-    val chosen_inline_result: ChosenInlineResult? = null,
-    val callback_query: CallbackQuery? = null,
-    val shipping_query: ShippingQuery? = null,
-    val pre_checkout_query: PreCheckoutQuery? = null,
-    val poll: Poll? = null,
-    val poll_answer: PollAnswer? = null
+  val update_id: Long,
+  val message: Message? = null,
+  val edited_message: Message? = null,
+  val channel_post: Message? = null,
+  val edited_channel_post: Message? = null,
+  val business_connection: BusinessConnection? = null,
+  val business_message: Message? = null,
+  val edited_business_message: Message? = null,
+  val deleted_business_messages: BusinessMessagesDeleted? = null,
+  val message_reaction: MessageReactionUpdated? = null,
+  val message_reaction_count: MessageReactionCountUpdated? = null,
+  val inline_query: InlineQuery? = null,
+  val chosen_inline_result: ChosenInlineResult? = null,
+  val callback_query: CallbackQuery? = null,
+  val shipping_query: ShippingQuery? = null,
+  val pre_checkout_query: PreCheckoutQuery? = null,
+  val poll: Poll? = null,
+  val poll_answer: PollAnswer? = null,
+  val my_chat_member: ChatMemberUpdated? = null,
+  val chat_member: ChatMemberUpdated? = null,
+  val chat_join_request: ChatJoinRequest? = null,
+  val chat_boost: ChatBoostUpdated? = null,
+  val removed_chat_boost: ChatBoostRemoved? = null,
 ) : TelegramModel() {
-    override fun toJson() = json.stringify(serializer(), this)
+  override fun toJson() = json.encodeToString(serializer(), this)
 
-    companion object {
-        fun fromJson(string: String) = json.parse(serializer(), string)
-    }
+  companion object {
+    fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+  }
 }
 ```
 
