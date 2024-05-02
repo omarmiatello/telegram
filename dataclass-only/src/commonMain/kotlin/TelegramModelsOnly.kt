@@ -11,12 +11,10 @@ sealed class ReactionType : TelegramModel()
 sealed class MessageOrigin : TelegramModel()
 sealed class ChatBoostSource : TelegramModel()
 sealed class MenuButton : TelegramModel()
-sealed class InputFileOrString : TelegramModel()
-sealed class IntegerOrString : TelegramModel()
 sealed class KeyboardOption : TelegramModel()
 sealed class MaybeInaccessibleMessage : TelegramModel()
-sealed class VoiceChatStarted : TelegramModel()
-sealed class VideoChatStarted : TelegramModel()
+sealed class InputFileOrString : TelegramModel()
+sealed class IntegerOrString : TelegramModel()
 data class TelegramResponse<T>(val ok: Boolean, val result: T? = null)
 
 // --- Utility ---
@@ -401,7 +399,7 @@ data class Message(
     val giveaway_winners: GiveawayWinners? = null,
     val giveaway_completed: GiveawayCompleted? = null,
     val video_chat_scheduled: VideoChatScheduled? = null,
-    val video_chat_started: VideoChatStarted? = null,
+    val video_chat_started: Any? = null,
     val video_chat_ended: VideoChatEnded? = null,
     val video_chat_participants_invited: VideoChatParticipantsInvited? = null,
     val web_app_data: WebAppData? = null,
@@ -1012,7 +1010,7 @@ data class ForumTopicEdited(
 ) : TelegramModel()
 
 /**
- * <p>This object contains information about a user that was shared with the bot using a <a href="#keyboardbuttonrequestuser">KeyboardButtonRequestUser</a> button.</p>
+ * <p>This object contains information about a user that was shared with the bot using a <a href="#keyboardbuttonrequestusers">KeyboardButtonRequestUsers</a> button.</p>
  *
  * @property user_id Identifier of the shared user. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so 64-bit integers or double-precision float types are safe for storing these identifiers. The bot may not have access to the user and could be unable to use this identifier, unless the user is already known to the bot by some other means.
  * @property first_name <em>Optional</em>. First name of the user, if the name was requested by the bot
@@ -1294,9 +1292,9 @@ data class KeyboardButton(
  * @property user_is_bot <em>Optional</em>. Pass <em>True</em> to request bots, pass <em>False</em> to request regular users. If not specified, no additional restrictions are applied.
  * @property user_is_premium <em>Optional</em>. Pass <em>True</em> to request premium users, pass <em>False</em> to request non-premium users. If not specified, no additional restrictions are applied.
  * @property max_quantity <em>Optional</em>. The maximum number of users to be selected; 1-10. Defaults to 1.
- * @property request_name <em>Optional</em>. Pass <em>True</em> to request the users' first and last name
- * @property request_username <em>Optional</em>. Pass <em>True</em> to request the users' username
- * @property request_photo <em>Optional</em>. Pass <em>True</em> to request the users' photo
+ * @property request_name <em>Optional</em>. Pass <em>True</em> to request the users' first and last names
+ * @property request_username <em>Optional</em>. Pass <em>True</em> to request the users' usernames
+ * @property request_photo <em>Optional</em>. Pass <em>True</em> to request the users' photos
  *
  * @constructor Creates a [KeyboardButtonRequestUsers].
  * */
@@ -1311,7 +1309,7 @@ data class KeyboardButtonRequestUsers(
 ) : TelegramModel()
 
 /**
- * <p>This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the сhat if appropriate <a href="/bots/features#chat-and-user-selection">More about requesting chats »</a></p>
+ * <p>This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the chat if appropriate. <a href="/bots/features#chat-and-user-selection">More about requesting chats »</a>.</p>
  *
  * @property request_id Signed 32-bit identifier of the request, which will be received back in the <a href="#chatshared">ChatShared</a> object. Must be unique within the message
  * @property chat_is_channel Pass <em>True</em> to request a channel chat, pass <em>False</em> to request a group or a supergroup chat.
@@ -2277,7 +2275,7 @@ data class BusinessConnection(
  *
  * @property business_connection_id Unique identifier of the business connection
  * @property chat Information about a chat in the business account. The bot may not have access to the chat or the corresponding user.
- * @property message_ids A JSON-serialized list of identifiers of deleted messages in the chat of the business account
+ * @property message_ids The list of identifiers of deleted messages in the chat of the business account
  *
  * @constructor Creates a [BusinessMessagesDeleted].
  * */
@@ -3835,7 +3833,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendMessageRequest(
         val business_connection_id: String? = null,
@@ -3953,7 +3951,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendPhotoRequest(
         val business_connection_id: String? = null,
@@ -3987,7 +3985,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendAudioRequest(
         val business_connection_id: String? = null,
@@ -4022,7 +4020,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendDocumentRequest(
         val business_connection_id: String? = null,
@@ -4059,7 +4057,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendVideoRequest(
         val business_connection_id: String? = null,
@@ -4099,7 +4097,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendAnimationRequest(
         val business_connection_id: String? = null,
@@ -4134,7 +4132,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendVoiceRequest(
         val business_connection_id: String? = null,
@@ -4164,7 +4162,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendVideoNoteRequest(
         val business_connection_id: String? = null,
@@ -4216,7 +4214,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendLocationRequest(
         val business_connection_id: String? = null,
@@ -4251,7 +4249,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendVenueRequest(
         val business_connection_id: String? = null,
@@ -4284,7 +4282,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendContactRequest(
         val business_connection_id: String? = null,
@@ -4321,7 +4319,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendPollRequest(
         val business_connection_id: String? = null,
@@ -4355,7 +4353,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     data class SendDiceRequest(
         val business_connection_id: String? = null,

@@ -9,12 +9,10 @@
     MessageOriginSerializer::class,
     ChatBoostSourceSerializer::class,
     MenuButtonSerializer::class,
-    InputFileOrStringSerializer::class,
-    IntegerOrStringSerializer::class,
     KeyboardOptionSerializer::class,
     MaybeInaccessibleMessageSerializer::class,
-    VoiceChatStartedSerializer::class,
-    VideoChatStartedSerializer::class,
+    InputFileOrStringSerializer::class,
+    IntegerOrStringSerializer::class,
 )
 
 package com.github.omarmiatello.telegram
@@ -23,10 +21,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
 
 private val json = Json {
     ignoreUnknownKeys = true
@@ -36,6 +31,16 @@ private val json = Json {
 
 sealed class TelegramModel {
     abstract fun toJson(): String
+}
+
+private fun <T> Decoder.tryDeserializers(vararg serializers: KSerializer<out T>): T {
+    return serializers.firstNotNullOf {
+        try {
+            decodeSerializableValue(it)
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
 
 @Serializable
@@ -50,7 +55,21 @@ object InputMediaSerializer : KSerializer<InputMedia> {
         is InputMediaDocument -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): InputMedia = TODO()
+    override fun deserialize(decoder: Decoder): InputMedia =
+        decoder.decodeSerializableValue(JsonElement.serializer()).let { jsonElement ->
+            json.decodeFromJsonElement(
+                deserializer =
+                when (val type = jsonElement.jsonObject.getValue("type").jsonPrimitive.content) {
+                    "photo" -> InputMediaPhoto.serializer()
+                    "video" -> InputMediaVideo.serializer()
+                    "animation" -> InputMediaAnimation.serializer()
+                    "audio" -> InputMediaAudio.serializer()
+                    "document" -> InputMediaDocument.serializer()
+                    else -> error("unknown type: " + type)
+                },
+                element = jsonElement,
+            )
+        }
 }
 
 @Serializable
@@ -65,7 +84,14 @@ object InputMessageContentSerializer : KSerializer<InputMessageContent> {
         is InputInvoiceMessageContent -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): InputMessageContent = TODO()
+    override fun deserialize(decoder: Decoder): InputMessageContent =
+        decoder.tryDeserializers(
+            InputTextMessageContent.serializer(),
+            InputLocationMessageContent.serializer(),
+            InputVenueMessageContent.serializer(),
+            InputContactMessageContent.serializer(),
+            InputInvoiceMessageContent.serializer()
+        )
 }
 
 @Serializable
@@ -95,7 +121,29 @@ object InlineQueryResultSerializer : KSerializer<InlineQueryResult> {
         is InlineQueryResultCachedAudio -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): InlineQueryResult = TODO()
+    override fun deserialize(decoder: Decoder): InlineQueryResult =
+        decoder.tryDeserializers(
+            InlineQueryResultArticle.serializer(),
+            InlineQueryResultPhoto.serializer(),
+            InlineQueryResultGif.serializer(),
+            InlineQueryResultMpeg4Gif.serializer(),
+            InlineQueryResultVideo.serializer(),
+            InlineQueryResultAudio.serializer(),
+            InlineQueryResultVoice.serializer(),
+            InlineQueryResultDocument.serializer(),
+            InlineQueryResultLocation.serializer(),
+            InlineQueryResultVenue.serializer(),
+            InlineQueryResultContact.serializer(),
+            InlineQueryResultGame.serializer(),
+            InlineQueryResultCachedPhoto.serializer(),
+            InlineQueryResultCachedGif.serializer(),
+            InlineQueryResultCachedMpeg4Gif.serializer(),
+            InlineQueryResultCachedSticker.serializer(),
+            InlineQueryResultCachedDocument.serializer(),
+            InlineQueryResultCachedVideo.serializer(),
+            InlineQueryResultCachedVoice.serializer(),
+            InlineQueryResultCachedAudio.serializer()
+        )
 }
 
 @Serializable
@@ -114,7 +162,18 @@ object PassportElementErrorSerializer : KSerializer<PassportElementError> {
         is PassportElementErrorUnspecified -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): PassportElementError = TODO()
+    override fun deserialize(decoder: Decoder): PassportElementError =
+        decoder.tryDeserializers(
+            PassportElementErrorDataField.serializer(),
+            PassportElementErrorFrontSide.serializer(),
+            PassportElementErrorReverseSide.serializer(),
+            PassportElementErrorSelfie.serializer(),
+            PassportElementErrorFile.serializer(),
+            PassportElementErrorFiles.serializer(),
+            PassportElementErrorTranslationFile.serializer(),
+            PassportElementErrorTranslationFiles.serializer(),
+            PassportElementErrorUnspecified.serializer()
+        )
 }
 
 @Serializable
@@ -131,7 +190,16 @@ object ChatMemberSerializer : KSerializer<ChatMember> {
         is ChatMemberBanned -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): ChatMember = TODO()
+    override fun deserialize(decoder: Decoder): ChatMember =
+        decoder.tryDeserializers(
+            ChatMemberUpdated.serializer(),
+            ChatMemberOwner.serializer(),
+            ChatMemberAdministrator.serializer(),
+            ChatMemberMember.serializer(),
+            ChatMemberRestricted.serializer(),
+            ChatMemberLeft.serializer(),
+            ChatMemberBanned.serializer()
+        )
 }
 
 @Serializable
@@ -148,7 +216,16 @@ object BotCommandScopeSerializer : KSerializer<BotCommandScope> {
         is BotCommandScopeChatMember -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): BotCommandScope = TODO()
+    override fun deserialize(decoder: Decoder): BotCommandScope =
+        decoder.tryDeserializers(
+            BotCommandScopeDefault.serializer(),
+            BotCommandScopeAllPrivateChats.serializer(),
+            BotCommandScopeAllGroupChats.serializer(),
+            BotCommandScopeAllChatAdministrators.serializer(),
+            BotCommandScopeChat.serializer(),
+            BotCommandScopeChatAdministrators.serializer(),
+            BotCommandScopeChatMember.serializer()
+        )
 }
 
 @Serializable
@@ -160,7 +237,8 @@ object ReactionTypeSerializer : KSerializer<ReactionType> {
         is ReactionTypeCustomEmoji -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): ReactionType = TODO()
+    override fun deserialize(decoder: Decoder): ReactionType =
+        decoder.tryDeserializers(ReactionTypeEmoji.serializer(), ReactionTypeCustomEmoji.serializer())
 }
 
 @Serializable
@@ -174,7 +252,13 @@ object MessageOriginSerializer : KSerializer<MessageOrigin> {
         is MessageOriginChannel -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): MessageOrigin = TODO()
+    override fun deserialize(decoder: Decoder): MessageOrigin =
+        decoder.tryDeserializers(
+            MessageOriginUser.serializer(),
+            MessageOriginHiddenUser.serializer(),
+            MessageOriginChat.serializer(),
+            MessageOriginChannel.serializer()
+        )
 }
 
 @Serializable
@@ -187,7 +271,12 @@ object ChatBoostSourceSerializer : KSerializer<ChatBoostSource> {
         is ChatBoostSourceGiveaway -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): ChatBoostSource = TODO()
+    override fun deserialize(decoder: Decoder): ChatBoostSource =
+        decoder.tryDeserializers(
+            ChatBoostSourcePremium.serializer(),
+            ChatBoostSourceGiftCode.serializer(),
+            ChatBoostSourceGiveaway.serializer()
+        )
 }
 
 @Serializable
@@ -200,7 +289,54 @@ object MenuButtonSerializer : KSerializer<MenuButton> {
         is MenuButtonDefault -> encoder.encodeSerializableValue(serializer(), value)
     }
 
-    override fun deserialize(decoder: Decoder): MenuButton = TODO()
+    override fun deserialize(decoder: Decoder): MenuButton =
+        decoder.tryDeserializers(
+            MenuButtonCommands.serializer(),
+            MenuButtonWebApp.serializer(),
+            MenuButtonDefault.serializer()
+        )
+}
+
+@Serializable
+sealed class KeyboardOption : TelegramModel()
+object KeyboardOptionSerializer : KSerializer<KeyboardOption> {
+    override val descriptor: SerialDescriptor = KeyboardOption.serializer().descriptor
+    override fun serialize(encoder: Encoder, value: KeyboardOption) = when (value) {
+        is ReplyKeyboardMarkup -> encoder.encodeSerializableValue(serializer(), value)
+        is ReplyKeyboardRemove -> encoder.encodeSerializableValue(serializer(), value)
+        is InlineKeyboardMarkup -> encoder.encodeSerializableValue(serializer(), value)
+        is ForceReply -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
+    override fun deserialize(decoder: Decoder): KeyboardOption =
+        decoder.tryDeserializers(
+            ReplyKeyboardMarkup.serializer(),
+            ReplyKeyboardRemove.serializer(),
+            InlineKeyboardMarkup.serializer(),
+            ForceReply.serializer()
+        )
+}
+
+@Serializable
+sealed class MaybeInaccessibleMessage : TelegramModel()
+object MaybeInaccessibleMessageSerializer : KSerializer<MaybeInaccessibleMessage> {
+    override val descriptor: SerialDescriptor = MaybeInaccessibleMessage.serializer().descriptor
+    override fun serialize(encoder: Encoder, value: MaybeInaccessibleMessage) = when (value) {
+        is Message -> encoder.encodeSerializableValue(serializer(), value)
+        is InaccessibleMessage -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
+    override fun deserialize(decoder: Decoder): MaybeInaccessibleMessage =
+        decoder.decodeSerializableValue(JsonElement.serializer()).let { jsonElement ->
+            json.decodeFromJsonElement(
+                deserializer = if (jsonElement.jsonObject.getValue("date").jsonPrimitive.long == 0L) {
+                    InaccessibleMessage.serializer()
+                } else {
+                    Message.serializer()
+                },
+                element = jsonElement,
+            )
+        }
 }
 
 @Serializable
@@ -217,48 +353,6 @@ object IntegerOrStringSerializer : KSerializer<IntegerOrString> {
     override val descriptor: SerialDescriptor = IntegerOrString.serializer().descriptor
     override fun serialize(encoder: Encoder, value: IntegerOrString) = TODO()
     override fun deserialize(decoder: Decoder): IntegerOrString = TODO()
-}
-
-@Serializable
-sealed class KeyboardOption : TelegramModel()
-object KeyboardOptionSerializer : KSerializer<KeyboardOption> {
-    override val descriptor: SerialDescriptor = KeyboardOption.serializer().descriptor
-    override fun serialize(encoder: Encoder, value: KeyboardOption) = when (value) {
-        is ReplyKeyboardMarkup -> encoder.encodeSerializableValue(serializer(), value)
-        is ReplyKeyboardRemove -> encoder.encodeSerializableValue(serializer(), value)
-        is InlineKeyboardMarkup -> encoder.encodeSerializableValue(serializer(), value)
-        is ForceReply -> encoder.encodeSerializableValue(serializer(), value)
-    }
-
-    override fun deserialize(decoder: Decoder): KeyboardOption = TODO()
-}
-
-@Serializable
-sealed class MaybeInaccessibleMessage : TelegramModel()
-object MaybeInaccessibleMessageSerializer : KSerializer<MaybeInaccessibleMessage> {
-    override val descriptor: SerialDescriptor = MaybeInaccessibleMessage.serializer().descriptor
-    override fun serialize(encoder: Encoder, value: MaybeInaccessibleMessage) = when (value) {
-        is Message -> encoder.encodeSerializableValue(serializer(), value)
-        is InaccessibleMessage -> encoder.encodeSerializableValue(serializer(), value)
-    }
-
-    override fun deserialize(decoder: Decoder): MaybeInaccessibleMessage = TODO()
-}
-
-@Serializable
-sealed class VoiceChatStarted : TelegramModel()
-object VoiceChatStartedSerializer : KSerializer<VoiceChatStarted> {
-    override val descriptor: SerialDescriptor = VoiceChatStarted.serializer().descriptor
-    override fun serialize(encoder: Encoder, value: VoiceChatStarted) = TODO()
-    override fun deserialize(decoder: Decoder): VoiceChatStarted = TODO()
-}
-
-@Serializable
-sealed class VideoChatStarted : TelegramModel()
-object VideoChatStartedSerializer : KSerializer<VideoChatStarted> {
-    override val descriptor: SerialDescriptor = VideoChatStarted.serializer().descriptor
-    override fun serialize(encoder: Encoder, value: VideoChatStarted) = TODO()
-    override fun deserialize(decoder: Decoder): VideoChatStarted = TODO()
 }
 
 @Serializable
@@ -677,7 +771,7 @@ data class Message(
     val giveaway_winners: GiveawayWinners? = null,
     val giveaway_completed: GiveawayCompleted? = null,
     val video_chat_scheduled: VideoChatScheduled? = null,
-    val video_chat_started: @Contextual VideoChatStarted? = null,
+    val video_chat_started: @Contextual Any? = null,
     val video_chat_ended: VideoChatEnded? = null,
     val video_chat_participants_invited: VideoChatParticipantsInvited? = null,
     val web_app_data: WebAppData? = null,
@@ -1511,7 +1605,7 @@ data class ForumTopicEdited(
 }
 
 /**
- * <p>This object contains information about a user that was shared with the bot using a <a href="#keyboardbuttonrequestuser">KeyboardButtonRequestUser</a> button.</p>
+ * <p>This object contains information about a user that was shared with the bot using a <a href="#keyboardbuttonrequestusers">KeyboardButtonRequestUsers</a> button.</p>
  *
  * @property user_id Identifier of the shared user. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so 64-bit integers or double-precision float types are safe for storing these identifiers. The bot may not have access to the user and could be unable to use this identifier, unless the user is already known to the bot by some other means.
  * @property first_name <em>Optional</em>. First name of the user, if the name was requested by the bot
@@ -1905,9 +1999,9 @@ data class KeyboardButton(
  * @property user_is_bot <em>Optional</em>. Pass <em>True</em> to request bots, pass <em>False</em> to request regular users. If not specified, no additional restrictions are applied.
  * @property user_is_premium <em>Optional</em>. Pass <em>True</em> to request premium users, pass <em>False</em> to request non-premium users. If not specified, no additional restrictions are applied.
  * @property max_quantity <em>Optional</em>. The maximum number of users to be selected; 1-10. Defaults to 1.
- * @property request_name <em>Optional</em>. Pass <em>True</em> to request the users' first and last name
- * @property request_username <em>Optional</em>. Pass <em>True</em> to request the users' username
- * @property request_photo <em>Optional</em>. Pass <em>True</em> to request the users' photo
+ * @property request_name <em>Optional</em>. Pass <em>True</em> to request the users' first and last names
+ * @property request_username <em>Optional</em>. Pass <em>True</em> to request the users' usernames
+ * @property request_photo <em>Optional</em>. Pass <em>True</em> to request the users' photos
  *
  * @constructor Creates a [KeyboardButtonRequestUsers].
  * */
@@ -1929,7 +2023,7 @@ data class KeyboardButtonRequestUsers(
 }
 
 /**
- * <p>This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the сhat if appropriate <a href="/bots/features#chat-and-user-selection">More about requesting chats »</a></p>
+ * <p>This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the chat if appropriate. <a href="/bots/features#chat-and-user-selection">More about requesting chats »</a>.</p>
  *
  * @property request_id Signed 32-bit identifier of the request, which will be received back in the <a href="#chatshared">ChatShared</a> object. Must be unique within the message
  * @property chat_is_channel Pass <em>True</em> to request a channel chat, pass <em>False</em> to request a group or a supergroup chat.
@@ -3280,7 +3374,7 @@ data class BusinessConnection(
  *
  * @property business_connection_id Unique identifier of the business connection
  * @property chat Information about a chat in the business account. The bot may not have access to the chat or the corresponding user.
- * @property message_ids A JSON-serialized list of identifiers of deleted messages in the chat of the business account
+ * @property message_ids The list of identifiers of deleted messages in the chat of the business account
  *
  * @constructor Creates a [BusinessMessagesDeleted].
  * */
@@ -5311,7 +5405,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendMessageRequest(
@@ -5479,7 +5573,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendPhotoRequest(
@@ -5523,7 +5617,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendAudioRequest(
@@ -5568,7 +5662,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendDocumentRequest(
@@ -5615,7 +5709,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendVideoRequest(
@@ -5665,7 +5759,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendAnimationRequest(
@@ -5710,7 +5804,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendVoiceRequest(
@@ -5750,7 +5844,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendVideoNoteRequest(
@@ -5822,7 +5916,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendLocationRequest(
@@ -5867,7 +5961,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendVenueRequest(
@@ -5910,7 +6004,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendContactRequest(
@@ -5957,7 +6051,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendPollRequest(
@@ -6001,7 +6095,7 @@ sealed class TelegramRequest {
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
      * */
     @Serializable
     data class SendDiceRequest(
