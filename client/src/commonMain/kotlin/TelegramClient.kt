@@ -141,44 +141,47 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send text messages. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property text Text of the message to be sent, 1-4096 characters after entities parsing
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property parse_mode Mode for parsing entities in the message text. See <a href="#formatting-options">formatting options</a> for more details.
      * @property entities A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>
      * @property link_preview_options Link preview generation options for the message
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendMessage(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         text: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         parse_mode: ParseMode? = null,
         entities: List<MessageEntity>? = null,
         link_preview_options: LinkPreviewOptions? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendMessage",
         SendMessageRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             text,
+            business_connection_id,
+            message_thread_id,
             parse_mode,
             entities,
             link_preview_options,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -189,30 +192,30 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * <p>Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
+     * @property message_id Message identifier in the chat specified in <em>from_chat_id</em>
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the forwarded message from forwarding and saving
-     * @property message_id Message identifier in the chat specified in <em>from_chat_id</em>
      *
      * @return [Message]
      * */
     suspend fun forwardMessage(
         chat_id: String,
-        message_thread_id: Long? = null,
         from_chat_id: String,
+        message_id: Long,
+        message_thread_id: Long? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
-        message_id: Long,
     ) = telegramPost(
         "$basePath/forwardMessage",
         ForwardMessageRequest(
             chat_id,
-            message_thread_id,
             from_chat_id,
+            message_id,
+            message_thread_id,
             disable_notification,
             protect_content,
-            message_id,
         ).toJsonForRequest(),
         Message.serializer()
     )
@@ -221,9 +224,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * <p>Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format <code>@channelusername</code>)
      * @property message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat <em>from_chat_id</em> to forward. The identifiers must be specified in a strictly increasing order.
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property disable_notification Sends the messages <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the forwarded messages from forwarding and saving
      *
@@ -231,18 +234,18 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * */
     suspend fun forwardMessages(
         chat_id: String,
-        message_thread_id: Long? = null,
         from_chat_id: String,
         message_ids: List<Long>,
+        message_thread_id: Long? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
     ) = telegramPost(
         "$basePath/forwardMessages",
         ForwardMessagesRequest(
             chat_id,
-            message_thread_id,
             from_chat_id,
             message_ids,
+            message_thread_id,
             disable_notification,
             protect_content,
         ).toJsonForRequest(),
@@ -253,27 +256,29 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * <p>Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
      * @property message_id Message identifier in the chat specified in <em>from_chat_id</em>
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property caption New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption is kept
      * @property parse_mode Mode for parsing entities in the new caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the new caption, which can be specified instead of <em>parse_mode</em>
+     * @property show_caption_above_media Pass <em>True</em>, if the caption must be shown above the message media. Ignored if a new caption isn't specified.
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [MessageId]
      * */
     suspend fun copyMessage(
         chat_id: String,
-        message_thread_id: Long? = null,
         from_chat_id: String,
         message_id: Long,
+        message_thread_id: Long? = null,
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
+        show_caption_above_media: Boolean? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
         reply_parameters: ReplyParameters? = null,
@@ -282,12 +287,13 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         "$basePath/copyMessage",
         CopyMessageRequest(
             chat_id,
-            message_thread_id,
             from_chat_id,
             message_id,
+            message_thread_id,
             caption,
             parse_mode,
             caption_entities,
+            show_caption_above_media,
             disable_notification,
             protect_content,
             reply_parameters,
@@ -300,9 +306,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * <p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessages">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format <code>@channelusername</code>)
      * @property message_ids A JSON-serialized list of 1-100 identifiers of messages in the chat <em>from_chat_id</em> to copy. The identifiers must be specified in a strictly increasing order.
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property disable_notification Sends the messages <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent messages from forwarding and saving
      * @property remove_caption Pass <em>True</em> to copy the messages without their captions
@@ -311,9 +317,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * */
     suspend fun copyMessages(
         chat_id: String,
-        message_thread_id: Long? = null,
         from_chat_id: String,
         message_ids: List<Long>,
+        message_thread_id: Long? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
         remove_caption: Boolean? = null,
@@ -321,9 +327,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         "$basePath/copyMessages",
         CopyMessagesRequest(
             chat_id,
-            message_thread_id,
             from_chat_id,
             message_ids,
+            message_thread_id,
             disable_notification,
             protect_content,
             remove_caption,
@@ -334,47 +340,53 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send photos. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property photo Photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data. The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20. <a href="#sending-files">More information on Sending Files »</a>
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property caption Photo caption (may also be used when resending photos by <em>file_id</em>), 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the photo caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
+     * @property show_caption_above_media Pass <em>True</em>, if the caption must be shown above the message media
      * @property has_spoiler Pass <em>True</em> if the photo needs to be covered with a spoiler animation
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendPhoto(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         photo: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
+        show_caption_above_media: Boolean? = null,
         has_spoiler: Boolean? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendPhoto",
         SendPhotoRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             photo,
+            business_connection_id,
+            message_thread_id,
             caption,
             parse_mode,
             caption_entities,
+            show_caption_above_media,
             has_spoiler,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -384,10 +396,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent <a href="#message">Message</a> is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.</p><p>For sending voice messages, use the <a href="#sendvoice">sendVoice</a> method instead.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property audio Audio file to send. Pass a file_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property caption Audio caption, 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the audio caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
@@ -397,16 +409,17 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property thumbnail Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href="#sending-files">More information on Sending Files »</a>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendAudio(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         audio: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
@@ -416,15 +429,16 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         thumbnail: String? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendAudio",
         SendAudioRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             audio,
+            business_connection_id,
+            message_thread_id,
             caption,
             parse_mode,
             caption_entities,
@@ -434,6 +448,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             thumbnail,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -443,10 +458,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send general files. On success, the sent <a href="#message">Message</a> is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property document File to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property thumbnail Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href="#sending-files">More information on Sending Files »</a>
      * @property caption Document caption (may also be used when resending documents by <em>file_id</em>), 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the document caption. See <a href="#formatting-options">formatting options</a> for more details.
@@ -454,16 +469,17 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property disable_content_type_detection Disables automatic server-side content type detection for files uploaded using multipart/form-data
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendDocument(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         document: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         thumbnail: String? = null,
         caption: String? = null,
         parse_mode: ParseMode? = null,
@@ -471,15 +487,16 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         disable_content_type_detection: Boolean? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendDocument",
         SendDocumentRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             document,
+            business_connection_id,
+            message_thread_id,
             thumbnail,
             caption,
             parse_mode,
@@ -487,6 +504,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             disable_content_type_detection,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -496,10 +514,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as <a href="#document">Document</a>). On success, the sent <a href="#message">Message</a> is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property video Video to send. Pass a file_id as String to send a video that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property duration Duration of sent video in seconds
      * @property width Video width
      * @property height Video height
@@ -507,20 +525,22 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property caption Video caption (may also be used when resending videos by <em>file_id</em>), 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the video caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
+     * @property show_caption_above_media Pass <em>True</em>, if the caption must be shown above the message media
      * @property has_spoiler Pass <em>True</em> if the video needs to be covered with a spoiler animation
      * @property supports_streaming Pass <em>True</em> if the uploaded video is suitable for streaming
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendVideo(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         video: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         duration: Long? = null,
         width: Long? = null,
         height: Long? = null,
@@ -528,19 +548,21 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
+        show_caption_above_media: Boolean? = null,
         has_spoiler: Boolean? = null,
         supports_streaming: Boolean? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendVideo",
         SendVideoRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             video,
+            business_connection_id,
+            message_thread_id,
             duration,
             width,
             height,
@@ -548,10 +570,12 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             caption,
             parse_mode,
             caption_entities,
+            show_caption_above_media,
             has_spoiler,
             supports_streaming,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -561,10 +585,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent <a href="#message">Message</a> is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property animation Animation to send. Pass a file_id as String to send an animation that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property duration Duration of sent animation in seconds
      * @property width Animation width
      * @property height Animation height
@@ -572,19 +596,21 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property caption Animation caption (may also be used when resending animation by <em>file_id</em>), 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the animation caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
+     * @property show_caption_above_media Pass <em>True</em>, if the caption must be shown above the message media
      * @property has_spoiler Pass <em>True</em> if the animation needs to be covered with a spoiler animation
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendAnimation(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         animation: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         duration: Long? = null,
         width: Long? = null,
         height: Long? = null,
@@ -592,18 +618,20 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
+        show_caption_above_media: Boolean? = null,
         has_spoiler: Boolean? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendAnimation",
         SendAnimationRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             animation,
+            business_connection_id,
+            message_thread_id,
             duration,
             width,
             height,
@@ -611,9 +639,11 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             caption,
             parse_mode,
             caption_entities,
+            show_caption_above_media,
             has_spoiler,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -621,49 +651,52 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS (other formats may be sent as <a href="#audio">Audio</a> or <a href="#document">Document</a>). On success, the sent <a href="#message">Message</a> is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.</p>
+     * <p>Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as <a href="#audio">Audio</a> or <a href="#document">Document</a>). On success, the sent <a href="#message">Message</a> is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property voice Audio file to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property caption Voice message caption, 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the voice message caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
      * @property duration Duration of the voice message in seconds
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendVoice(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         voice: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
         duration: Long? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendVoice",
         SendVoiceRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             voice,
+            business_connection_id,
+            message_thread_id,
             caption,
             parse_mode,
             caption_entities,
             duration,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -673,44 +706,47 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>As of <a href="https://telegram.org/blog/video-messages-and-telescope">v.4.0</a>, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property video_note Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>. Sending video notes by a URL is currently unsupported
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property duration Duration of sent video in seconds
      * @property length Video width and height, i.e. diameter of the video message
      * @property thumbnail Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href="#sending-files">More information on Sending Files »</a>
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendVideoNote(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         video_note: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         duration: Long? = null,
         length: Long? = null,
         thumbnail: String? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendVideoNote",
         SendVideoNoteRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             video_note,
+            business_connection_id,
+            message_thread_id,
             duration,
             length,
             thumbnail,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -720,33 +756,36 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of <a href="#message">Messages</a> that were sent is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property media A JSON-serialized array describing messages to be sent, must include 2-10 items
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property disable_notification Sends messages <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent messages from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
      *
      * @return [List<Message>]
      * */
     suspend fun sendMediaGroup(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         media: List<InputMedia>,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
     ) = telegramPost(
         "$basePath/sendMediaGroup",
         SendMediaGroupRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             media,
+            business_connection_id,
+            message_thread_id,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
         ).toJsonForRequest(),
         ListSerializer(Message.serializer())
@@ -755,50 +794,53 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send point on the map. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property latitude Latitude of the location
      * @property longitude Longitude of the location
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property horizontal_accuracy The radius of uncertainty for the location, measured in meters; 0-1500
-     * @property live_period Period in seconds for which the location will be updated (see <a href="https://telegram.org/blog/live-locations">Live Locations</a>, should be between 60 and 86400.
+     * @property live_period Period in seconds during which the location will be updated (see <a href="https://telegram.org/blog/live-locations">Live Locations</a>, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely.
      * @property heading For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.
      * @property proximity_alert_radius For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendLocation(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         latitude: Float,
         longitude: Float,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         horizontal_accuracy: Float? = null,
         live_period: Long? = null,
         heading: Long? = null,
         proximity_alert_radius: Long? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendLocation",
         SendLocationRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             latitude,
             longitude,
+            business_connection_id,
+            message_thread_id,
             horizontal_accuracy,
             live_period,
             heading,
             proximity_alert_radius,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -808,56 +850,59 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send information about a venue. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property latitude Latitude of the venue
      * @property longitude Longitude of the venue
      * @property title Name of the venue
      * @property address Address of the venue
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property foursquare_id Foursquare identifier of the venue
      * @property foursquare_type Foursquare type of the venue, if known. (For example, “arts_entertainment/default”, “arts_entertainment/aquarium” or “food/icecream”.)
      * @property google_place_id Google Places identifier of the venue
      * @property google_place_type Google Places type of the venue. (See <a href="https://developers.google.com/places/web-service/supported_types">supported types</a>.)
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendVenue(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         latitude: Float,
         longitude: Float,
         title: String,
         address: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         foursquare_id: String? = null,
         foursquare_type: String? = null,
         google_place_id: String? = null,
         google_place_type: String? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendVenue",
         SendVenueRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             latitude,
             longitude,
             title,
             address,
+            business_connection_id,
+            message_thread_id,
             foursquare_id,
             foursquare_type,
             google_place_id,
             google_place_type,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -867,44 +912,47 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send phone contacts. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property phone_number Contact's phone number
      * @property first_name Contact's first name
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property last_name Contact's last name
      * @property vcard Additional data about the contact in the form of a <a href="https://en.wikipedia.org/wiki/VCard">vCard</a>, 0-2048 bytes
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendContact(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         phone_number: String,
         first_name: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         last_name: String? = null,
         vcard: String? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendContact",
         SendContactRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             phone_number,
             first_name,
+            business_connection_id,
+            message_thread_id,
             last_name,
             vcard,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -914,34 +962,39 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send a native poll. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property question Poll question, 1-300 characters
-     * @property options A JSON-serialized list of answer options, 2-10 strings 1-100 characters each
+     * @property options A JSON-serialized list of 2-10 answer options
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
+     * @property question_parse_mode Mode for parsing entities in the question. See <a href="#formatting-options">formatting options</a> for more details. Currently, only custom emoji entities are allowed
+     * @property question_entities A JSON-serialized list of special entities that appear in the poll question. It can be specified instead of <em>question_parse_mode</em>
      * @property is_anonymous <em>True</em>, if the poll needs to be anonymous, defaults to <em>True</em>
      * @property type Poll type, “quiz” or “regular”, defaults to “regular”
      * @property allows_multiple_answers <em>True</em>, if the poll allows multiple answers, ignored for polls in quiz mode, defaults to <em>False</em>
      * @property correct_option_id 0-based identifier of the correct answer option, required for polls in quiz mode
      * @property explanation Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll, 0-200 characters with at most 2 line feeds after entities parsing
      * @property explanation_parse_mode Mode for parsing entities in the explanation. See <a href="#formatting-options">formatting options</a> for more details.
-     * @property explanation_entities A JSON-serialized list of special entities that appear in the poll explanation, which can be specified instead of <em>parse_mode</em>
+     * @property explanation_entities A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of <em>explanation_parse_mode</em>
      * @property open_period Amount of time in seconds the poll will be active after creation, 5-600. Can't be used together with <em>close_date</em>.
      * @property close_date Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 600 seconds in the future. Can't be used together with <em>open_period</em>.
      * @property is_closed Pass <em>True</em> if the poll needs to be immediately closed. This can be useful for poll preview.
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendPoll(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         question: String,
-        options: List<String>,
+        options: List<InputPollOption>,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
+        question_parse_mode: String? = null,
+        question_entities: List<MessageEntity>? = null,
         is_anonymous: Boolean? = null,
         type: String? = null,
         allows_multiple_answers: Boolean? = null,
@@ -954,16 +1007,19 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         is_closed: Boolean? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendPoll",
         SendPollRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             question,
             options,
+            business_connection_id,
+            message_thread_id,
+            question_parse_mode,
+            question_entities,
             is_anonymous,
             type,
             allows_multiple_answers,
@@ -976,6 +1032,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             is_closed,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -985,35 +1042,38 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send an animated emoji that will display a random value. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property emoji Emoji on which the dice throw animation is based. Currently, must be one of “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB2.png" width="20" height="20" alt="🎲">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EAF.png" width="20" height="20" alt="🎯">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8F80.png" width="20" height="20" alt="🏀">”, “<img class="emoji" src="//telegram.org/img/emoji/40/E29ABD.png" width="20" height="20" alt="⚽">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB3.png" width="20" height="20" alt="🎳">”, or “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB0.png" width="20" height="20" alt="🎰">”. Dice can have values 1-6 for “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB2.png" width="20" height="20" alt="🎲">”, “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EAF.png" width="20" height="20" alt="🎯">” and “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB3.png" width="20" height="20" alt="🎳">”, values 1-5 for “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8F80.png" width="20" height="20" alt="🏀">” and “<img class="emoji" src="//telegram.org/img/emoji/40/E29ABD.png" width="20" height="20" alt="⚽">”, and values 1-64 for “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB0.png" width="20" height="20" alt="🎰">”. Defaults to “<img class="emoji" src="//telegram.org/img/emoji/40/F09F8EB2.png" width="20" height="20" alt="🎲">”
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendDice(
-        business_connection_id: String? = null,
         chat_id: String,
+        business_connection_id: String? = null,
         message_thread_id: Long? = null,
         emoji: String? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendDice",
         SendDiceRequest(
-            business_connection_id,
             chat_id,
+            business_connection_id,
             message_thread_id,
             emoji,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -1025,25 +1085,25 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      *  <p>Example: The <a href="https://t.me/imagebot">ImageBot</a> needs some time to process a request and upload the image. Instead of sending a text message along the lines of “Retrieving image, please wait…”, the bot may use <a href="#sendchataction">sendChatAction</a> with <em>action</em> = <em>upload_photo</em>. The user will see a “sending photo” status for the bot.</p>
      * </blockquote><p>We only recommend using this method when a response from the bot will take a <strong>noticeable</strong> amount of time to arrive.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the action will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread; for supergroups only
      * @property action Type of action to broadcast. Choose one, depending on what the user is about to receive: <em>typing</em> for <a href="#sendmessage">text messages</a>, <em>upload_photo</em> for <a href="#sendphoto">photos</a>, <em>record_video</em> or <em>upload_video</em> for <a href="#sendvideo">videos</a>, <em>record_voice</em> or <em>upload_voice</em> for <a href="#sendvoice">voice notes</a>, <em>upload_document</em> for <a href="#senddocument">general files</a>, <em>choose_sticker</em> for <a href="#sendsticker">stickers</a>, <em>find_location</em> for <a href="#sendlocation">location data</a>, <em>record_video_note</em> or <em>upload_video_note</em> for <a href="#sendvideonote">video notes</a>.
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the action will be sent
+     * @property message_thread_id Unique identifier for the target message thread; for supergroups only
      *
      * @return [Boolean]
      * */
     suspend fun sendChatAction(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         action: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
     ) = telegramPost(
         "$basePath/sendChatAction",
         SendChatActionRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             action,
+            business_connection_id,
+            message_thread_id,
         ).toJsonForRequest(),
         Boolean.serializer()
     )
@@ -1206,7 +1266,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property can_change_info Pass <em>True</em> if the administrator can change chat title, photo and other settings
      * @property can_invite_users Pass <em>True</em> if the administrator can invite new users to the chat
      * @property can_post_stories Pass <em>True</em> if the administrator can post stories to the chat
-     * @property can_edit_stories Pass <em>True</em> if the administrator can edit stories posted by other users
+     * @property can_edit_stories Pass <em>True</em> if the administrator can edit stories posted by other users, post stories to the chat page, pin chat stories, and access the chat's story archive
      * @property can_delete_stories Pass <em>True</em> if the administrator can delete stories posted by other users
      * @property can_post_messages Pass <em>True</em> if the administrator can post messages in the channel, or access channel statistics; for channels only
      * @property can_edit_messages Pass <em>True</em> if the administrator can edit messages of other users and can pin messages; for channels only
@@ -1638,11 +1698,11 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to get up to date information about the chat. Returns a <a href="#chat">Chat</a> object on success.</p>
+     * <p>Use this method to get up-to-date information about the chat. Returns a <a href="#chatfullinfo">ChatFullInfo</a> object on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target supergroup or channel (in the format <code>@channelusername</code>)
      *
-     * @return [Chat]
+     * @return [ChatFullInfo]
      * */
     suspend fun getChat(
         chat_id: String,
@@ -1651,7 +1711,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         GetChatRequest(
             chat_id,
         ).toJsonForRequest(),
-        Chat.serializer()
+        ChatFullInfo.serializer()
     )
 
     /**
@@ -2312,10 +2372,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to edit text and <a href="#games">game</a> messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
+     * @property text New text of the message, 1-4096 characters after entities parsing
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
-     * @property text New text of the message, 1-4096 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the message text. See <a href="#formatting-options">formatting options</a> for more details.
      * @property entities A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>
      * @property link_preview_options Link preview generation options for the message
@@ -2324,10 +2384,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Message]
      * */
     suspend fun editMessageText(
+        text: String,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
-        text: String,
         parse_mode: ParseMode? = null,
         entities: List<MessageEntity>? = null,
         link_preview_options: LinkPreviewOptions? = null,
@@ -2335,10 +2395,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     ) = telegramPost(
         "$basePath/editMessageText",
         EditMessageTextRequest(
+            text,
             chat_id,
             message_id,
             inline_message_id,
-            text,
             parse_mode,
             entities,
             link_preview_options,
@@ -2356,6 +2416,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property caption New caption of the message, 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the message caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
+     * @property show_caption_above_media Pass <em>True</em>, if the caption must be shown above the message media. Supported only for animation, photo and video messages.
      * @property reply_markup A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>.
      *
      * @return [Message]
@@ -2367,6 +2428,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
+        show_caption_above_media: Boolean? = null,
         reply_markup: InlineKeyboardMarkup? = null,
     ) = telegramPost(
         "$basePath/editMessageCaption",
@@ -2377,6 +2439,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             caption,
             parse_mode,
             caption_entities,
+            show_caption_above_media,
             reply_markup,
         ).toJsonForRequest(),
         Message.serializer()
@@ -2385,27 +2448,27 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
+     * @property media A JSON-serialized object for a new media content of the message
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
-     * @property media A JSON-serialized object for a new media content of the message
      * @property reply_markup A JSON-serialized object for a new <a href="/bots/features#inline-keyboards">inline keyboard</a>.
      *
      * @return [Message]
      * */
     suspend fun editMessageMedia(
+        media: InputMedia,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
-        media: InputMedia,
         reply_markup: InlineKeyboardMarkup? = null,
     ) = telegramPost(
         "$basePath/editMessageMedia",
         EditMessageMediaRequest(
+            media,
             chat_id,
             message_id,
             inline_message_id,
-            media,
             reply_markup,
         ).toJsonForRequest(),
         Message.serializer()
@@ -2414,11 +2477,12 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to edit live location messages. A location can be edited until its <em>live_period</em> expires or editing is explicitly disabled by a call to <a href="#stopmessagelivelocation">stopMessageLiveLocation</a>. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
+     * @property latitude Latitude of new location
+     * @property longitude Longitude of new location
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
-     * @property latitude Latitude of new location
-     * @property longitude Longitude of new location
+     * @property live_period New period in seconds during which the location can be updated, starting from the message send date. If 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not exceed the current <em>live_period</em> by more than a day, and the live location expiration date must remain within the next 90 days. If not specified, then <em>live_period</em> remains unchanged
      * @property horizontal_accuracy The radius of uncertainty for the location, measured in meters; 0-1500
      * @property heading Direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.
      * @property proximity_alert_radius The maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.
@@ -2427,11 +2491,12 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Message]
      * */
     suspend fun editMessageLiveLocation(
+        latitude: Float,
+        longitude: Float,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
-        latitude: Float,
-        longitude: Float,
+        live_period: Long? = null,
         horizontal_accuracy: Float? = null,
         heading: Long? = null,
         proximity_alert_radius: Long? = null,
@@ -2439,11 +2504,12 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     ) = telegramPost(
         "$basePath/editMessageLiveLocation",
         EditMessageLiveLocationRequest(
+            latitude,
+            longitude,
             chat_id,
             message_id,
             inline_message_id,
-            latitude,
-            longitude,
+            live_period,
             horizontal_accuracy,
             heading,
             proximity_alert_radius,
@@ -2572,38 +2638,41 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send static .WEBP, <a href="https://telegram.org/blog/animated-stickers">animated</a> .TGS, or <a href="https://telegram.org/blog/video-stickers-better-reactions">video</a> .WEBM stickers. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property sticker Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>. Video and animated stickers can't be sent via an HTTP URL.
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property emoji Emoji associated with the sticker; only for just uploaded stickers
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove reply keyboard or to force a reply from the user. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
      *
      * @return [Message]
      * */
     suspend fun sendSticker(
-        business_connection_id: String? = null,
         chat_id: String,
-        message_thread_id: Long? = null,
         sticker: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         emoji: String? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: KeyboardOption? = null,
     ) = telegramPost(
         "$basePath/sendSticker",
         SendStickerRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             sticker,
+            business_connection_id,
+            message_thread_id,
             emoji,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -2870,23 +2939,23 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      *
      * @property name Sticker set name
      * @property user_id User identifier of the sticker set owner
-     * @property thumbnail A <strong>.WEBP</strong> or <strong>.PNG</strong> image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a <strong>.TGS</strong> animation with a thumbnail up to 32 kilobytes in size (see <a href="/stickers#animated-sticker-requirements"></a><a href="https://core.telegram.org/stickers#animated-sticker-requirements">https://core.telegram.org/stickers#animated-sticker-requirements</a> for animated sticker technical requirements), or a <strong>WEBM</strong> video with the thumbnail up to 32 kilobytes in size; see <a href="/stickers#video-sticker-requirements"></a><a href="https://core.telegram.org/stickers#video-sticker-requirements">https://core.telegram.org/stickers#video-sticker-requirements</a> for video sticker technical requirements. Pass a <em>file_id</em> as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>. Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.
      * @property format Format of the thumbnail, must be one of “static” for a <strong>.WEBP</strong> or <strong>.PNG</strong> image, “animated” for a <strong>.TGS</strong> animation, or “video” for a <strong>WEBM</strong> video
+     * @property thumbnail A <strong>.WEBP</strong> or <strong>.PNG</strong> image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a <strong>.TGS</strong> animation with a thumbnail up to 32 kilobytes in size (see <a href="/stickers#animated-sticker-requirements"></a><a href="https://core.telegram.org/stickers#animated-sticker-requirements">https://core.telegram.org/stickers#animated-sticker-requirements</a> for animated sticker technical requirements), or a <strong>WEBM</strong> video with the thumbnail up to 32 kilobytes in size; see <a href="/stickers#video-sticker-requirements"></a><a href="https://core.telegram.org/stickers#video-sticker-requirements">https://core.telegram.org/stickers#video-sticker-requirements</a> for video sticker technical requirements. Pass a <em>file_id</em> as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>. Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.
      *
      * @return [Boolean]
      * */
     suspend fun setStickerSetThumbnail(
         name: String,
         user_id: Long,
-        thumbnail: String? = null,
         format: String,
+        thumbnail: String? = null,
     ) = telegramPost(
         "$basePath/setStickerSetThumbnail",
         SetStickerSetThumbnailRequest(
             name,
             user_id,
-            thumbnail,
             format,
+            thumbnail,
         ).toJsonForRequest(),
         Boolean.serializer()
     )
@@ -2988,14 +3057,14 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * <p>Use this method to send invoices. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property title Product name, 1-32 characters
      * @property description Product description, 1-255 characters
      * @property payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
-     * @property provider_token Payment provider token, obtained via <a href="https://t.me/botfather">@BotFather</a>
-     * @property currency Three-letter ISO 4217 currency code, see <a href="/bots/payments#supported-currencies">more on currencies</a>
-     * @property prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.)
-     * @property max_tip_amount The maximum accepted amount for tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a maximum tip of <code>US$ 1.45</code> pass <code>max_tip_amount = 145</code>. See the <em>exp</em> parameter in <a href="/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0
+     * @property currency Three-letter ISO 4217 currency code, see <a href="/bots/payments#supported-currencies">more on currencies</a>. Pass “XTR” for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
+     * @property provider_token Payment provider token, obtained via <a href="https://t.me/botfather">@BotFather</a>. Pass an empty string for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property max_tip_amount The maximum accepted amount for tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a maximum tip of <code>US$ 1.45</code> pass <code>max_tip_amount = 145</code>. See the <em>exp</em> parameter in <a href="/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0. Not supported for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
      * @property suggested_tip_amounts A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.
      * @property start_parameter Unique deep-linking parameter. If left empty, <strong>forwarded copies</strong> of the sent message will have a <em>Pay</em> button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a <em>URL</em> button with a deep link to the bot (instead of a <em>Pay</em> button), with the value used as the start parameter
      * @property provider_data JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.
@@ -3003,15 +3072,16 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property photo_size Photo size in bytes
      * @property photo_width Photo width
      * @property photo_height Photo height
-     * @property need_name Pass <em>True</em> if you require the user's full name to complete the order
-     * @property need_phone_number Pass <em>True</em> if you require the user's phone number to complete the order
-     * @property need_email Pass <em>True</em> if you require the user's email address to complete the order
-     * @property need_shipping_address Pass <em>True</em> if you require the user's shipping address to complete the order
-     * @property send_phone_number_to_provider Pass <em>True</em> if the user's phone number should be sent to provider
-     * @property send_email_to_provider Pass <em>True</em> if the user's email address should be sent to provider
-     * @property is_flexible Pass <em>True</em> if the final price depends on the shipping method
+     * @property need_name Pass <em>True</em> if you require the user's full name to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property need_phone_number Pass <em>True</em> if you require the user's phone number to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property need_email Pass <em>True</em> if you require the user's email address to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property need_shipping_address Pass <em>True</em> if you require the user's shipping address to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property send_phone_number_to_provider Pass <em>True</em> if the user's phone number should be sent to the provider. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property send_email_to_provider Pass <em>True</em> if the user's email address should be sent to the provider. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property is_flexible Pass <em>True</em> if the final price depends on the shipping method. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
      * @property reply_markup A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>. If empty, one 'Pay <code>total price</code>' button will be shown. If not empty, the first button must be a Pay button.
      *
@@ -3019,13 +3089,13 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * */
     suspend fun sendInvoice(
         chat_id: String,
-        message_thread_id: Long? = null,
         title: String,
         description: String,
         payload: String,
-        provider_token: String,
         currency: String,
         prices: List<LabeledPrice>,
+        message_thread_id: Long? = null,
+        provider_token: String? = null,
         max_tip_amount: Long? = null,
         suggested_tip_amounts: List<Long>? = null,
         start_parameter: String? = null,
@@ -3043,19 +3113,20 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         is_flexible: Boolean? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: InlineKeyboardMarkup? = null,
     ) = telegramPost(
         "$basePath/sendInvoice",
         SendInvoiceRequest(
             chat_id,
-            message_thread_id,
             title,
             description,
             payload,
-            provider_token,
             currency,
             prices,
+            message_thread_id,
+            provider_token,
             max_tip_amount,
             suggested_tip_amounts,
             start_parameter,
@@ -3073,6 +3144,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             is_flexible,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
@@ -3085,23 +3157,23 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @property title Product name, 1-32 characters
      * @property description Product description, 1-255 characters
      * @property payload Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
-     * @property provider_token Payment provider token, obtained via <a href="https://t.me/botfather">BotFather</a>
-     * @property currency Three-letter ISO 4217 currency code, see <a href="/bots/payments#supported-currencies">more on currencies</a>
-     * @property prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.)
-     * @property max_tip_amount The maximum accepted amount for tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a maximum tip of <code>US$ 1.45</code> pass <code>max_tip_amount = 145</code>. See the <em>exp</em> parameter in <a href="/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0
+     * @property currency Three-letter ISO 4217 currency code, see <a href="/bots/payments#supported-currencies">more on currencies</a>. Pass “XTR” for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property prices Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property provider_token Payment provider token, obtained via <a href="https://t.me/botfather">@BotFather</a>. Pass an empty string for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property max_tip_amount The maximum accepted amount for tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a maximum tip of <code>US$ 1.45</code> pass <code>max_tip_amount = 145</code>. See the <em>exp</em> parameter in <a href="/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0. Not supported for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
      * @property suggested_tip_amounts A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.
      * @property provider_data JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.
      * @property photo_url URL of the product photo for the invoice. Can be a photo of the goods or a marketing image for a service.
      * @property photo_size Photo size in bytes
      * @property photo_width Photo width
      * @property photo_height Photo height
-     * @property need_name Pass <em>True</em> if you require the user's full name to complete the order
-     * @property need_phone_number Pass <em>True</em> if you require the user's phone number to complete the order
-     * @property need_email Pass <em>True</em> if you require the user's email address to complete the order
-     * @property need_shipping_address Pass <em>True</em> if you require the user's shipping address to complete the order
-     * @property send_phone_number_to_provider Pass <em>True</em> if the user's phone number should be sent to the provider
-     * @property send_email_to_provider Pass <em>True</em> if the user's email address should be sent to the provider
-     * @property is_flexible Pass <em>True</em> if the final price depends on the shipping method
+     * @property need_name Pass <em>True</em> if you require the user's full name to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property need_phone_number Pass <em>True</em> if you require the user's phone number to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property need_email Pass <em>True</em> if you require the user's email address to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property need_shipping_address Pass <em>True</em> if you require the user's shipping address to complete the order. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property send_phone_number_to_provider Pass <em>True</em> if the user's phone number should be sent to the provider. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property send_email_to_provider Pass <em>True</em> if the user's email address should be sent to the provider. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
+     * @property is_flexible Pass <em>True</em> if the final price depends on the shipping method. Ignored for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>.
      *
      * @return [String]
      * */
@@ -3109,9 +3181,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         title: String,
         description: String,
         payload: String,
-        provider_token: String,
         currency: String,
         prices: List<LabeledPrice>,
+        provider_token: String? = null,
         max_tip_amount: Long? = null,
         suggested_tip_amounts: List<Long>? = null,
         provider_data: String? = null,
@@ -3132,9 +3204,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             title,
             description,
             payload,
-            provider_token,
             currency,
             prices,
+            provider_token,
             max_tip_amount,
             suggested_tip_amounts,
             provider_data,
@@ -3202,6 +3274,26 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         Boolean.serializer()
     )
 
+    /**
+     * <p>Refunds a successful payment in <a href="https://t.me/BotNews/90">Telegram Stars</a>. Returns <em>True</em> on success.</p>
+     *
+     * @property user_id Identifier of the user whose payment will be refunded
+     * @property telegram_payment_charge_id Telegram payment identifier
+     *
+     * @return [Boolean]
+     * */
+    suspend fun refundStarPayment(
+        user_id: Long,
+        telegram_payment_charge_id: String,
+    ) = telegramPost(
+        "$basePath/refundStarPayment",
+        RefundStarPaymentRequest(
+            user_id,
+            telegram_payment_charge_id,
+        ).toJsonForRequest(),
+        Boolean.serializer()
+    )
+
 // Telegram Passport
 
     /**
@@ -3229,35 +3321,38 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to send a game. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property chat_id Unique identifier for the target chat
-     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property game_short_name Short name of the game, serves as the unique identifier for the game. Set up your games via <a href="https://t.me/botfather">@BotFather</a>.
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
+     * @property message_thread_id Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
      * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
      * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property message_effect_id Unique identifier of the message effect to be added to the message; for private chats only
      * @property reply_parameters Description of the message to reply to
-     * @property reply_markup A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>. If empty, one 'Play game_title' button will be shown. If not empty, the first button must launch the game. Not supported for messages sent on behalf of a business account.
+     * @property reply_markup A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>. If empty, one 'Play game_title' button will be shown. If not empty, the first button must launch the game.
      *
      * @return [Message]
      * */
     suspend fun sendGame(
-        business_connection_id: String? = null,
         chat_id: Long,
-        message_thread_id: Long? = null,
         game_short_name: String,
+        business_connection_id: String? = null,
+        message_thread_id: Long? = null,
         disable_notification: Boolean? = null,
         protect_content: Boolean? = null,
+        message_effect_id: String? = null,
         reply_parameters: ReplyParameters? = null,
         reply_markup: InlineKeyboardMarkup? = null,
     ) = telegramPost(
         "$basePath/sendGame",
         SendGameRequest(
-            business_connection_id,
             chat_id,
-            message_thread_id,
             game_short_name,
+            business_connection_id,
+            message_thread_id,
             disable_notification,
             protect_content,
+            message_effect_id,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),

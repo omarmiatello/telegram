@@ -5,7 +5,7 @@
 Full API documentation of Telegram Bot API
 https://core.telegram.org/bots/api
 
-**Library API version 7.2.2**
+**Library API version 7.4**
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
@@ -45,7 +45,7 @@ This module contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:7.2.2")
+implementation("com.github.omarmiatello.telegram:dataclass:7.4")
 ```
 
 ### Example 1 - Ktor 3.0 server
@@ -117,7 +117,7 @@ See [https://github.com/omarmiatello/github-actions-kotlin-script-template](http
 #!/usr/bin/env kotlin
 @file:Repository("https://repo.maven.apache.org/maven2")
 @file:DependsOn("com.github.omarmiatello.kotlin-script-toolbox:zero-setup:0.0.3")
-@file:DependsOn("com.github.omarmiatello.telegram:client-jvm:7.2.2")
+@file:DependsOn("com.github.omarmiatello.telegram:client-jvm:7.4")
 @file:DependsOn("io.ktor:ktor-client-okhttp-jvm:3.0.0")  // required for com.github.omarmiatello.telegram:client
 
 import com.github.omarmiatello.kotlinscripttoolbox.core.launchKotlinScriptToolbox
@@ -265,7 +265,7 @@ This module contains only 2 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:7.2.2")
+implementation("com.github.omarmiatello.telegram:client:7.4")
 ```
 
 ### Send a message to a user/group/channel
@@ -331,13 +331,13 @@ NOTE: Not for beginner. Guide [here](docs/dataclass-only.md).
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // alternative, contains: `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:7.2.2")
+implementation("com.github.omarmiatello.telegram:client:7.4")
 
 // alternative, contains only: `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:7.2.2")
+implementation("com.github.omarmiatello.telegram:dataclass:7.4")
 
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
-implementation("com.github.omarmiatello.telegram:dataclass-only:7.2.2")
+implementation("com.github.omarmiatello.telegram:dataclass-only:7.4")
 ```
 
 ## License
