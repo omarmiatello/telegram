@@ -11,6 +11,8 @@
     MenuButtonSerializer::class,
     BackgroundFillSerializer::class,
     BackgroundTypeSerializer::class,
+    RevenueWithdrawalStateSerializer::class,
+    TransactionPartnerSerializer::class,
     KeyboardOptionSerializer::class,
     MaybeInaccessibleMessageSerializer::class,
     InputFileOrStringSerializer::class,
@@ -334,6 +336,42 @@ object BackgroundTypeSerializer : KSerializer<BackgroundType> {
             BackgroundTypeWallpaper.serializer(),
             BackgroundTypePattern.serializer(),
             BackgroundTypeChatTheme.serializer()
+        )
+}
+
+@Serializable
+sealed class RevenueWithdrawalState : TelegramModel()
+object RevenueWithdrawalStateSerializer : KSerializer<RevenueWithdrawalState> {
+    override val descriptor: SerialDescriptor = RevenueWithdrawalState.serializer().descriptor
+    override fun serialize(encoder: Encoder, value: RevenueWithdrawalState) = when (value) {
+        is RevenueWithdrawalStatePending -> encoder.encodeSerializableValue(serializer(), value)
+        is RevenueWithdrawalStateSucceeded -> encoder.encodeSerializableValue(serializer(), value)
+        is RevenueWithdrawalStateFailed -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
+    override fun deserialize(decoder: Decoder): RevenueWithdrawalState =
+        decoder.tryDeserializers(
+            RevenueWithdrawalStatePending.serializer(),
+            RevenueWithdrawalStateSucceeded.serializer(),
+            RevenueWithdrawalStateFailed.serializer()
+        )
+}
+
+@Serializable
+sealed class TransactionPartner : TelegramModel()
+object TransactionPartnerSerializer : KSerializer<TransactionPartner> {
+    override val descriptor: SerialDescriptor = TransactionPartner.serializer().descriptor
+    override fun serialize(encoder: Encoder, value: TransactionPartner) = when (value) {
+        is TransactionPartnerFragment -> encoder.encodeSerializableValue(serializer(), value)
+        is TransactionPartnerUser -> encoder.encodeSerializableValue(serializer(), value)
+        is TransactionPartnerOther -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
+    override fun deserialize(decoder: Decoder): TransactionPartner =
+        decoder.tryDeserializers(
+            TransactionPartnerFragment.serializer(),
+            TransactionPartnerUser.serializer(),
+            TransactionPartnerOther.serializer()
         )
 }
 
@@ -2403,7 +2441,7 @@ data class InlineKeyboardMarkup(
  *
  * @property text Label text on the button
  * @property url <em>Optional</em>. HTTP or tg:// URL to be opened when the button is pressed. Links <code>tg://user?id=&lt;user_id&gt;</code> can be used to mention a user by their identifier without using a username, if this is allowed by their privacy settings.
- * @property callback_data <em>Optional</em>. Data to be sent in a <a href="#callbackquery">callback query</a> to the bot when button is pressed, 1-64 bytes. Not supported for messages sent on behalf of a Telegram Business account.
+ * @property callback_data <em>Optional</em>. Data to be sent in a <a href="#callbackquery">callback query</a> to the bot when the button is pressed, 1-64 bytes
  * @property web_app <em>Optional</em>. Description of the <a href="/bots/webapps">Web App</a> that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href="#answerwebappquery">answerWebAppQuery</a>. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a Telegram Business account.
  * @property login_url <em>Optional</em>. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the <a href="/widgets/login">Telegram Login Widget</a>.
  * @property switch_inline_query <em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent on behalf of a Telegram Business account.
@@ -5230,6 +5268,166 @@ data class PreCheckoutQuery(
     }
 }
 
+/**
+ * <p>The withdrawal is in progress.</p>
+ *
+ * @property type Type of the state, always “pending”
+ *
+ * @constructor Creates a [RevenueWithdrawalStatePending].
+ * */
+@Serializable
+data class RevenueWithdrawalStatePending(
+    val type: String,
+) : RevenueWithdrawalState() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>The withdrawal succeeded.</p>
+ *
+ * @property type Type of the state, always “succeeded”
+ * @property date Date the withdrawal was completed in Unix time
+ * @property url An HTTPS URL that can be used to see transaction details
+ *
+ * @constructor Creates a [RevenueWithdrawalStateSucceeded].
+ * */
+@Serializable
+data class RevenueWithdrawalStateSucceeded(
+    val type: String,
+    val date: Long,
+    val url: String,
+) : RevenueWithdrawalState() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>The withdrawal failed and the transaction was refunded.</p>
+ *
+ * @property type Type of the state, always “failed”
+ *
+ * @constructor Creates a [RevenueWithdrawalStateFailed].
+ * */
+@Serializable
+data class RevenueWithdrawalStateFailed(
+    val type: String,
+) : RevenueWithdrawalState() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>Describes a withdrawal transaction with Fragment.</p>
+ *
+ * @property type Type of the transaction partner, always “fragment”
+ * @property withdrawal_state <em>Optional</em>. State of the transaction if the transaction is outgoing
+ *
+ * @constructor Creates a [TransactionPartnerFragment].
+ * */
+@Serializable
+data class TransactionPartnerFragment(
+    val type: String,
+    val withdrawal_state: @Contextual RevenueWithdrawalState? = null,
+) : TransactionPartner() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>Describes a transaction with a user.</p>
+ *
+ * @property type Type of the transaction partner, always “user”
+ * @property user Information about the user
+ *
+ * @constructor Creates a [TransactionPartnerUser].
+ * */
+@Serializable
+data class TransactionPartnerUser(
+    val type: String,
+    val user: User,
+) : TransactionPartner() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>Describes a transaction with an unknown source or recipient.</p>
+ *
+ * @property type Type of the transaction partner, always “other”
+ *
+ * @constructor Creates a [TransactionPartnerOther].
+ * */
+@Serializable
+data class TransactionPartnerOther(
+    val type: String,
+) : TransactionPartner() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>Describes a Telegram Star transaction.</p>
+ *
+ * @property id Unique identifier of the transaction. Coincides with the identifer of the original transaction for refund transactions. Coincides with <em>SuccessfulPayment.telegram_payment_charge_id</em> for successful incoming payments from users.
+ * @property amount Number of Telegram Stars transferred by the transaction
+ * @property date Date the transaction was created in Unix time
+ * @property source <em>Optional</em>. Source of an incoming transaction (e.g., a user purchasing goods or services, Fragment refunding a failed withdrawal). Only for incoming transactions
+ * @property receiver <em>Optional</em>. Receiver of an outgoing transaction (e.g., a user for a purchase refund, Fragment for a withdrawal). Only for outgoing transactions
+ *
+ * @constructor Creates a [StarTransaction].
+ * */
+@Serializable
+data class StarTransaction(
+    val id: String,
+    val amount: Long,
+    val date: Long,
+    val source: @Contextual TransactionPartner? = null,
+    val receiver: @Contextual TransactionPartner? = null,
+) : TelegramModel() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>Contains a list of Telegram Star transactions.</p>
+ *
+ * @property transactions The list of transactions
+ *
+ * @constructor Creates a [StarTransactions].
+ * */
+@Serializable
+data class StarTransactions(
+    val transactions: List<StarTransaction>,
+) : TelegramModel() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
 
 // Telegram Passport
 
@@ -7848,9 +8046,10 @@ sealed class TelegramRequest {
 // Updating messages
 
     /**
-     * <p>Use this method to edit text and <a href="#games">game</a> messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit text and <a href="#games">game</a> messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
      * @property text New text of the message, 1-4096 characters after entities parsing
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -7862,6 +8061,7 @@ sealed class TelegramRequest {
     @Serializable
     data class EditMessageTextRequest(
         val text: String,
+        val business_connection_id: String? = null,
         val chat_id: String? = null,
         val message_id: Long? = null,
         val inline_message_id: String? = null,
@@ -7881,8 +8081,9 @@ sealed class TelegramRequest {
     }
 
     /**
-     * <p>Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -7894,6 +8095,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class EditMessageCaptionRequest(
+        val business_connection_id: String? = null,
         val chat_id: String? = null,
         val message_id: Long? = null,
         val inline_message_id: String? = null,
@@ -7914,9 +8116,10 @@ sealed class TelegramRequest {
     }
 
     /**
-     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
      * @property media A JSON-serialized object for a new media content of the message
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -7925,6 +8128,7 @@ sealed class TelegramRequest {
     @Serializable
     data class EditMessageMediaRequest(
         val media: @Contextual InputMedia,
+        val business_connection_id: String? = null,
         val chat_id: String? = null,
         val message_id: Long? = null,
         val inline_message_id: String? = null,
@@ -7945,6 +8149,7 @@ sealed class TelegramRequest {
      *
      * @property latitude Latitude of new location
      * @property longitude Longitude of new location
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -7958,6 +8163,7 @@ sealed class TelegramRequest {
     data class EditMessageLiveLocationRequest(
         val latitude: Float,
         val longitude: Float,
+        val business_connection_id: String? = null,
         val chat_id: String? = null,
         val message_id: Long? = null,
         val inline_message_id: String? = null,
@@ -7983,6 +8189,7 @@ sealed class TelegramRequest {
     /**
      * <p>Use this method to stop updating a live location message before <em>live_period</em> expires. On success, if the message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message with live location to stop
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -7990,6 +8197,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class StopMessageLiveLocationRequest(
+        val business_connection_id: String? = null,
         val chat_id: String? = null,
         val message_id: Long? = null,
         val inline_message_id: String? = null,
@@ -8009,8 +8217,9 @@ sealed class TelegramRequest {
     }
 
     /**
-     * <p>Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -8018,6 +8227,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class EditMessageReplyMarkupRequest(
+        val business_connection_id: String? = null,
         val chat_id: String? = null,
         val message_id: Long? = null,
         val inline_message_id: String? = null,
@@ -8041,12 +8251,14 @@ sealed class TelegramRequest {
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Identifier of the original message with the poll
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property reply_markup A JSON-serialized object for a new message <a href="/bots/features#inline-keyboards">inline keyboard</a>.
      * */
     @Serializable
     data class StopPollRequest(
         val chat_id: String,
         val message_id: Long,
+        val business_connection_id: String? = null,
         val reply_markup: InlineKeyboardMarkup? = null,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
@@ -8716,6 +8928,27 @@ sealed class TelegramRequest {
                 serializer(),
                 this
             ).jsonObject + ("method" to JsonPrimitive("answerPreCheckoutQuery"))
+        ).toString()
+
+        companion object {
+            fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+        }
+    }
+
+    /**
+     * <p>Returns the bot's Telegram Star transactions in chronological order. On success, returns a <a href="#startransactions">StarTransactions</a> object.</p>
+     *
+     * @property offset Number of transactions to skip in the response
+     * @property limit The maximum number of transactions to be retrieved. Values between 1-100 are accepted. Defaults to 100.
+     * */
+    @Serializable
+    data class GetStarTransactionsRequest(
+        val offset: Long? = null,
+        val limit: Long? = null,
+    ) : TelegramRequest() {
+        override fun toJsonForRequest() = json.encodeToString(serializer(), this)
+        override fun toJsonForResponse() = JsonObject(
+            json.encodeToJsonElement(serializer(), this).jsonObject + ("method" to JsonPrimitive("getStarTransactions"))
         ).toString()
 
         companion object {

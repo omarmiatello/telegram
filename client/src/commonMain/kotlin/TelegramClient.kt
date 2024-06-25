@@ -2370,9 +2370,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
 // Updating messages
 
     /**
-     * <p>Use this method to edit text and <a href="#games">game</a> messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit text and <a href="#games">game</a> messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
      * @property text New text of the message, 1-4096 characters after entities parsing
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -2385,6 +2386,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * */
     suspend fun editMessageText(
         text: String,
+        business_connection_id: String? = null,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
@@ -2396,6 +2398,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         "$basePath/editMessageText",
         EditMessageTextRequest(
             text,
+            business_connection_id,
             chat_id,
             message_id,
             inline_message_id,
@@ -2408,8 +2411,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -2422,6 +2426,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Message]
      * */
     suspend fun editMessageCaption(
+        business_connection_id: String? = null,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
@@ -2433,6 +2438,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     ) = telegramPost(
         "$basePath/editMessageCaption",
         EditMessageCaptionRequest(
+            business_connection_id,
             chat_id,
             message_id,
             inline_message_id,
@@ -2446,9 +2452,10 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
      * @property media A JSON-serialized object for a new media content of the message
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -2458,6 +2465,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * */
     suspend fun editMessageMedia(
         media: InputMedia,
+        business_connection_id: String? = null,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
@@ -2466,6 +2474,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         "$basePath/editMessageMedia",
         EditMessageMediaRequest(
             media,
+            business_connection_id,
             chat_id,
             message_id,
             inline_message_id,
@@ -2479,6 +2488,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      *
      * @property latitude Latitude of new location
      * @property longitude Longitude of new location
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -2493,6 +2503,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     suspend fun editMessageLiveLocation(
         latitude: Float,
         longitude: Float,
+        business_connection_id: String? = null,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
@@ -2506,6 +2517,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         EditMessageLiveLocationRequest(
             latitude,
             longitude,
+            business_connection_id,
             chat_id,
             message_id,
             inline_message_id,
@@ -2521,6 +2533,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     /**
      * <p>Use this method to stop updating a live location message before <em>live_period</em> expires. On success, if the message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message with live location to stop
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -2529,6 +2542,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Message]
      * */
     suspend fun stopMessageLiveLocation(
+        business_connection_id: String? = null,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
@@ -2536,6 +2550,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     ) = telegramPost(
         "$basePath/stopMessageLiveLocation",
         StopMessageLiveLocationRequest(
+            business_connection_id,
             chat_id,
             message_id,
             inline_message_id,
@@ -2545,8 +2560,9 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
+     * <p>Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property chat_id Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit
      * @property inline_message_id Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message
@@ -2555,6 +2571,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Message]
      * */
     suspend fun editMessageReplyMarkup(
+        business_connection_id: String? = null,
         chat_id: String? = null,
         message_id: Long? = null,
         inline_message_id: String? = null,
@@ -2562,6 +2579,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     ) = telegramPost(
         "$basePath/editMessageReplyMarkup",
         EditMessageReplyMarkupRequest(
+            business_connection_id,
             chat_id,
             message_id,
             inline_message_id,
@@ -2575,6 +2593,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Identifier of the original message with the poll
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message to be edited was sent
      * @property reply_markup A JSON-serialized object for a new message <a href="/bots/features#inline-keyboards">inline keyboard</a>.
      *
      * @return [Poll]
@@ -2582,12 +2601,14 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     suspend fun stopPoll(
         chat_id: String,
         message_id: Long,
+        business_connection_id: String? = null,
         reply_markup: InlineKeyboardMarkup? = null,
     ) = telegramPost(
         "$basePath/stopPoll",
         StopPollRequest(
             chat_id,
             message_id,
+            business_connection_id,
             reply_markup,
         ).toJsonForRequest(),
         Poll.serializer()
@@ -3272,6 +3293,26 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             error_message,
         ).toJsonForRequest(),
         Boolean.serializer()
+    )
+
+    /**
+     * <p>Returns the bot's Telegram Star transactions in chronological order. On success, returns a <a href="#startransactions">StarTransactions</a> object.</p>
+     *
+     * @property offset Number of transactions to skip in the response
+     * @property limit The maximum number of transactions to be retrieved. Values between 1-100 are accepted. Defaults to 100.
+     *
+     * @return [StarTransactions]
+     * */
+    suspend fun getStarTransactions(
+        offset: Long? = null,
+        limit: Long? = null,
+    ) = telegramPost(
+        "$basePath/getStarTransactions",
+        GetStarTransactionsRequest(
+            offset,
+            limit,
+        ).toJsonForRequest(),
+        StarTransactions.serializer()
     )
 
     /**

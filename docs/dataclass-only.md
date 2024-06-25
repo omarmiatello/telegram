@@ -11,7 +11,7 @@ Contains a simple list of data class
 
 Add this in your root `build.gradle.ktx` file:
 ```kotlin
-implementation("com.github.omarmiatello.telegram:dataclass-only:7.4")
+implementation("com.github.omarmiatello.telegram:dataclass-only:7.5.1")
 ```
 
 ### Example
