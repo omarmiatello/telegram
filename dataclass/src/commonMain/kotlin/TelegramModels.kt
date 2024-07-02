@@ -13,6 +13,8 @@
     BackgroundTypeSerializer::class,
     RevenueWithdrawalStateSerializer::class,
     TransactionPartnerSerializer::class,
+    PaidMediaSerializer::class,
+    InputPaidMediaSerializer::class,
     KeyboardOptionSerializer::class,
     MaybeInaccessibleMessageSerializer::class,
     InputFileOrStringSerializer::class,
@@ -362,17 +364,52 @@ sealed class TransactionPartner : TelegramModel()
 object TransactionPartnerSerializer : KSerializer<TransactionPartner> {
     override val descriptor: SerialDescriptor = TransactionPartner.serializer().descriptor
     override fun serialize(encoder: Encoder, value: TransactionPartner) = when (value) {
-        is TransactionPartnerFragment -> encoder.encodeSerializableValue(serializer(), value)
         is TransactionPartnerUser -> encoder.encodeSerializableValue(serializer(), value)
+        is TransactionPartnerFragment -> encoder.encodeSerializableValue(serializer(), value)
+        is TransactionPartnerTelegramAds -> encoder.encodeSerializableValue(serializer(), value)
         is TransactionPartnerOther -> encoder.encodeSerializableValue(serializer(), value)
     }
 
     override fun deserialize(decoder: Decoder): TransactionPartner =
         decoder.tryDeserializers(
-            TransactionPartnerFragment.serializer(),
             TransactionPartnerUser.serializer(),
+            TransactionPartnerFragment.serializer(),
+            TransactionPartnerTelegramAds.serializer(),
             TransactionPartnerOther.serializer()
         )
+}
+
+@Serializable
+sealed class PaidMedia : TelegramModel()
+object PaidMediaSerializer : KSerializer<PaidMedia> {
+    override val descriptor: SerialDescriptor = PaidMedia.serializer().descriptor
+    override fun serialize(encoder: Encoder, value: PaidMedia) = when (value) {
+        is PaidMediaInfo -> encoder.encodeSerializableValue(serializer(), value)
+        is PaidMediaPreview -> encoder.encodeSerializableValue(serializer(), value)
+        is PaidMediaPhoto -> encoder.encodeSerializableValue(serializer(), value)
+        is PaidMediaVideo -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
+    override fun deserialize(decoder: Decoder): PaidMedia =
+        decoder.tryDeserializers(
+            PaidMediaInfo.serializer(),
+            PaidMediaPreview.serializer(),
+            PaidMediaPhoto.serializer(),
+            PaidMediaVideo.serializer()
+        )
+}
+
+@Serializable
+sealed class InputPaidMedia : TelegramModel()
+object InputPaidMediaSerializer : KSerializer<InputPaidMedia> {
+    override val descriptor: SerialDescriptor = InputPaidMedia.serializer().descriptor
+    override fun serialize(encoder: Encoder, value: InputPaidMedia) = when (value) {
+        is InputPaidMediaPhoto -> encoder.encodeSerializableValue(serializer(), value)
+        is InputPaidMediaVideo -> encoder.encodeSerializableValue(serializer(), value)
+    }
+
+    override fun deserialize(decoder: Decoder): InputPaidMedia =
+        decoder.tryDeserializers(InputPaidMediaPhoto.serializer(), InputPaidMediaVideo.serializer())
 }
 
 @Serializable
@@ -650,6 +687,7 @@ data class Chat(
  * @property invite_link <em>Optional</em>. Primary invite link, for groups, supergroups and channel chats
  * @property pinned_message <em>Optional</em>. The most recent pinned message (by sending date)
  * @property permissions <em>Optional</em>. Default chat member permissions, for groups and supergroups
+ * @property can_send_paid_media <em>Optional</em>. <em>True</em>, if paid media messages can be sent or forwarded to the channel chat. The field is available only for channel chats.
  * @property slow_mode_delay <em>Optional</em>. For supergroups, the minimum allowed delay between consecutive messages sent by each unprivileged user; in seconds
  * @property unrestrict_boost_count <em>Optional</em>. For supergroups, the minimum number of boosts that a non-administrator user needs to add in order to ignore slow mode and chat permissions
  * @property message_auto_delete_time <em>Optional</em>. The time after which all messages sent to the chat will be automatically deleted; in seconds
@@ -698,6 +736,7 @@ data class ChatFullInfo(
     val invite_link: String? = null,
     val pinned_message: Message? = null,
     val permissions: ChatPermissions? = null,
+    val can_send_paid_media: Boolean? = null,
     val slow_mode_delay: Long? = null,
     val unrestrict_boost_count: Long? = null,
     val message_auto_delete_time: Long? = null,
@@ -750,13 +789,14 @@ data class ChatFullInfo(
  * @property animation <em>Optional</em>. Message is an animation, information about the animation. For backward compatibility, when this field is set, the <em>document</em> field will also be set
  * @property audio <em>Optional</em>. Message is an audio file, information about the file
  * @property document <em>Optional</em>. Message is a general file, information about the file
+ * @property paid_media <em>Optional</em>. Message contains paid media; information about the paid media
  * @property photo <em>Optional</em>. Message is a photo, available sizes of the photo
  * @property sticker <em>Optional</em>. Message is a sticker, information about the sticker
  * @property story <em>Optional</em>. Message is a forwarded story
  * @property video <em>Optional</em>. Message is a video, information about the video
  * @property video_note <em>Optional</em>. Message is a <a href="https://telegram.org/blog/video-messages-and-telescope">video note</a>, information about the video message
  * @property voice <em>Optional</em>. Message is a voice message, information about the file
- * @property caption <em>Optional</em>. Caption for the animation, audio, document, photo, video or voice
+ * @property caption <em>Optional</em>. Caption for the animation, audio, document, paid media, photo, video or voice
  * @property caption_entities <em>Optional</em>. For messages with a caption, special entities like usernames, URLs, bot commands, etc. that appear in the caption
  * @property show_caption_above_media <em>Optional</em>. True, if the caption must be shown above the message media
  * @property has_media_spoiler <em>Optional</em>. <em>True</em>, if the message media is covered by a spoiler animation
@@ -838,6 +878,7 @@ data class Message(
     val animation: Animation? = null,
     val audio: Audio? = null,
     val document: Document? = null,
+    val paid_media: PaidMediaInfo? = null,
     val photo: List<PhotoSize>? = null,
     val sticker: Sticker? = null,
     val story: Story? = null,
@@ -1004,6 +1045,7 @@ data class TextQuote(
  * @property animation <em>Optional</em>. Message is an animation, information about the animation
  * @property audio <em>Optional</em>. Message is an audio file, information about the file
  * @property document <em>Optional</em>. Message is a general file, information about the file
+ * @property paid_media <em>Optional</em>. Message contains paid media; information about the paid media
  * @property photo <em>Optional</em>. Message is a photo, available sizes of the photo
  * @property sticker <em>Optional</em>. Message is a sticker, information about the sticker
  * @property story <em>Optional</em>. Message is a forwarded story
@@ -1032,6 +1074,7 @@ data class ExternalReplyInfo(
     val animation: Animation? = null,
     val audio: Audio? = null,
     val document: Document? = null,
+    val paid_media: PaidMediaInfo? = null,
     val photo: List<PhotoSize>? = null,
     val sticker: Sticker? = null,
     val story: Story? = null,
@@ -1211,12 +1254,12 @@ data class PhotoSize(
  *
  * @property file_id Identifier for this file, which can be used to download or reuse the file
  * @property file_unique_id Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
- * @property width Video width as defined by sender
- * @property height Video height as defined by sender
- * @property duration Duration of the video in seconds as defined by sender
- * @property thumbnail <em>Optional</em>. Animation thumbnail as defined by sender
- * @property file_name <em>Optional</em>. Original animation filename as defined by sender
- * @property mime_type <em>Optional</em>. MIME type of the file as defined by sender
+ * @property width Video width as defined by the sender
+ * @property height Video height as defined by the sender
+ * @property duration Duration of the video in seconds as defined by the sender
+ * @property thumbnail <em>Optional</em>. Animation thumbnail as defined by the sender
+ * @property file_name <em>Optional</em>. Original animation filename as defined by the sender
+ * @property mime_type <em>Optional</em>. MIME type of the file as defined by the sender
  * @property file_size <em>Optional</em>. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
  *
  * @constructor Creates a [Animation].
@@ -1245,11 +1288,11 @@ data class Animation(
  *
  * @property file_id Identifier for this file, which can be used to download or reuse the file
  * @property file_unique_id Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
- * @property duration Duration of the audio in seconds as defined by sender
- * @property performer <em>Optional</em>. Performer of the audio as defined by sender or by audio tags
- * @property title <em>Optional</em>. Title of the audio as defined by sender or by audio tags
- * @property file_name <em>Optional</em>. Original filename as defined by sender
- * @property mime_type <em>Optional</em>. MIME type of the file as defined by sender
+ * @property duration Duration of the audio in seconds as defined by the sender
+ * @property performer <em>Optional</em>. Performer of the audio as defined by the sender or by audio tags
+ * @property title <em>Optional</em>. Title of the audio as defined by the sender or by audio tags
+ * @property file_name <em>Optional</em>. Original filename as defined by the sender
+ * @property mime_type <em>Optional</em>. MIME type of the file as defined by the sender
  * @property file_size <em>Optional</em>. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
  * @property thumbnail <em>Optional</em>. Thumbnail of the album cover to which the music file belongs
  *
@@ -1279,9 +1322,9 @@ data class Audio(
  *
  * @property file_id Identifier for this file, which can be used to download or reuse the file
  * @property file_unique_id Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
- * @property thumbnail <em>Optional</em>. Document thumbnail as defined by sender
- * @property file_name <em>Optional</em>. Original filename as defined by sender
- * @property mime_type <em>Optional</em>. MIME type of the file as defined by sender
+ * @property thumbnail <em>Optional</em>. Document thumbnail as defined by the sender
+ * @property file_name <em>Optional</em>. Original filename as defined by the sender
+ * @property mime_type <em>Optional</em>. MIME type of the file as defined by the sender
  * @property file_size <em>Optional</em>. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
  *
  * @constructor Creates a [Document].
@@ -1327,12 +1370,12 @@ data class Story(
  *
  * @property file_id Identifier for this file, which can be used to download or reuse the file
  * @property file_unique_id Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
- * @property width Video width as defined by sender
- * @property height Video height as defined by sender
- * @property duration Duration of the video in seconds as defined by sender
+ * @property width Video width as defined by the sender
+ * @property height Video height as defined by the sender
+ * @property duration Duration of the video in seconds as defined by the sender
  * @property thumbnail <em>Optional</em>. Video thumbnail
- * @property file_name <em>Optional</em>. Original filename as defined by sender
- * @property mime_type <em>Optional</em>. MIME type of the file as defined by sender
+ * @property file_name <em>Optional</em>. Original filename as defined by the sender
+ * @property mime_type <em>Optional</em>. MIME type of the file as defined by the sender
  * @property file_size <em>Optional</em>. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
  *
  * @constructor Creates a [Video].
@@ -1361,8 +1404,8 @@ data class Video(
  *
  * @property file_id Identifier for this file, which can be used to download or reuse the file
  * @property file_unique_id Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
- * @property length Video width and height (diameter of the video message) as defined by sender
- * @property duration Duration of the video in seconds as defined by sender
+ * @property length Video width and height (diameter of the video message) as defined by the sender
+ * @property duration Duration of the video in seconds as defined by the sender
  * @property thumbnail <em>Optional</em>. Video thumbnail
  * @property file_size <em>Optional</em>. File size in bytes
  *
@@ -1389,8 +1432,8 @@ data class VideoNote(
  *
  * @property file_id Identifier for this file, which can be used to download or reuse the file
  * @property file_unique_id Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
- * @property duration Duration of the audio in seconds as defined by sender
- * @property mime_type <em>Optional</em>. MIME type of the file as defined by sender
+ * @property duration Duration of the audio in seconds as defined by the sender
+ * @property mime_type <em>Optional</em>. MIME type of the file as defined by the sender
  * @property file_size <em>Optional</em>. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
  *
  * @constructor Creates a [Voice].
@@ -1403,6 +1446,90 @@ data class Voice(
     val mime_type: String? = null,
     val file_size: Long? = null,
 ) : TelegramModel() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>Describes the paid media added to a message.</p>
+ *
+ * @property star_count The number of Telegram Stars that must be paid to buy access to the media
+ * @property paid_media Information about the paid media
+ *
+ * @constructor Creates a [PaidMediaInfo].
+ * */
+@Serializable
+data class PaidMediaInfo(
+    val star_count: Long,
+    val paid_media: List<@Contextual PaidMedia>,
+) : PaidMedia() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>The paid media isn't available before the payment.</p>
+ *
+ * @property type Type of the paid media, always “preview”
+ * @property width <em>Optional</em>. Media width as defined by the sender
+ * @property height <em>Optional</em>. Media height as defined by the sender
+ * @property duration <em>Optional</em>. Duration of the media in seconds as defined by the sender
+ *
+ * @constructor Creates a [PaidMediaPreview].
+ * */
+@Serializable
+data class PaidMediaPreview(
+    val type: String,
+    val width: Long? = null,
+    val height: Long? = null,
+    val duration: Long? = null,
+) : PaidMedia() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>The paid media is a photo.</p>
+ *
+ * @property type Type of the paid media, always “photo”
+ * @property photo The photo
+ *
+ * @constructor Creates a [PaidMediaPhoto].
+ * */
+@Serializable
+data class PaidMediaPhoto(
+    val type: String,
+    val photo: List<PhotoSize>,
+) : PaidMedia() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>The paid media is a video.</p>
+ *
+ * @property type Type of the paid media, always “video”
+ * @property video The video
+ *
+ * @constructor Creates a [PaidMediaVideo].
+ * */
+@Serializable
+data class PaidMediaVideo(
+    val type: String,
+    val video: Video,
+) : PaidMedia() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {
@@ -1479,7 +1606,7 @@ data class PollOption(
 }
 
 /**
- * <p>This object contains information about one answer option in a poll to send.</p>
+ * <p>This object contains information about one answer option in a poll to be sent.</p>
  *
  * @property text Option text, 1-100 characters
  * @property text_parse_mode <em>Optional</em>. Mode for parsing entities in the text. See <a href="#formatting-options">formatting options</a> for more details. Currently, only custom emoji entities are allowed
@@ -1571,8 +1698,8 @@ data class Poll(
 /**
  * <p>This object represents a point on the map.</p>
  *
- * @property latitude Latitude as defined by sender
- * @property longitude Longitude as defined by sender
+ * @property latitude Latitude as defined by the sender
+ * @property longitude Longitude as defined by the sender
  * @property horizontal_accuracy <em>Optional</em>. The radius of uncertainty for the location, measured in meters; 0-1500
  * @property live_period <em>Optional</em>. Time relative to the message sending date, during which the location can be updated; in seconds. For active live locations only.
  * @property heading <em>Optional</em>. The direction in which user is moving, in degrees; 1-360. For active live locations only.
@@ -3478,7 +3605,7 @@ data class MenuButtonCommands(
  *
  * @property type Type of the button, must be <em>web_app</em>
  * @property text Text on the button
- * @property web_app Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href="#answerwebappquery">answerWebAppQuery</a>.
+ * @property web_app Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href="#answerwebappquery">answerWebAppQuery</a>. Alternatively, a <code>t.me</code> link to a Web App of the bot can be specified in the object instead of the Web App's URL, in which case the Web App will be opened as if the user pressed the link.
  *
  * @constructor Creates a [MenuButtonWebApp].
  * */
@@ -3898,6 +4025,56 @@ data class InputMediaDocument(
     val caption_entities: List<MessageEntity>? = null,
     val disable_content_type_detection: Boolean? = null,
 ) : InputMedia() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>The paid media to send is a photo.</p>
+ *
+ * @property type Type of the media, must be <em>photo</em>
+ * @property media File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href="#sending-files">More information on Sending Files »</a>
+ *
+ * @constructor Creates a [InputPaidMediaPhoto].
+ * */
+@Serializable
+data class InputPaidMediaPhoto(
+    val type: String,
+    val media: String,
+) : InputPaidMedia() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
+ * <p>The paid media to send is a video.</p>
+ *
+ * @property type Type of the media, must be <em>video</em>
+ * @property media File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href="#sending-files">More information on Sending Files »</a>
+ * @property thumbnail <em>Optional</em>. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href="#sending-files">More information on Sending Files »</a>
+ * @property width <em>Optional</em>. Video width
+ * @property height <em>Optional</em>. Video height
+ * @property duration <em>Optional</em>. Video duration in seconds
+ * @property supports_streaming <em>Optional</em>. Pass <em>True</em> if the uploaded video is suitable for streaming
+ *
+ * @constructor Creates a [InputPaidMediaVideo].
+ * */
+@Serializable
+data class InputPaidMediaVideo(
+    val type: String,
+    val media: String,
+    val thumbnail: String? = null,
+    val width: Long? = null,
+    val height: Long? = null,
+    val duration: Long? = null,
+    val supports_streaming: Boolean? = null,
+) : InputPaidMedia() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
     companion object {
@@ -5189,7 +5366,7 @@ data class ShippingOption(
  *
  * @property currency Three-letter ISO 4217 <a href="/bots/payments#supported-currencies">currency</a> code, or “XTR” for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>
  * @property total_amount Total price in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a price of <code>US$ 1.45</code> pass <code>amount = 145</code>. See the <em>exp</em> parameter in <a href="/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies).
- * @property invoice_payload Bot specified invoice payload
+ * @property invoice_payload Bot-specified invoice payload
  * @property telegram_payment_charge_id Telegram payment identifier
  * @property provider_payment_charge_id Provider payment identifier
  * @property shipping_option_id <em>Optional</em>. Identifier of the shipping option chosen by the user
@@ -5219,7 +5396,7 @@ data class SuccessfulPayment(
  *
  * @property id Unique query identifier
  * @property from User who sent the query
- * @property invoice_payload Bot specified invoice payload
+ * @property invoice_payload Bot-specified invoice payload
  * @property shipping_address User specified shipping address
  *
  * @constructor Creates a [ShippingQuery].
@@ -5245,7 +5422,7 @@ data class ShippingQuery(
  * @property from User who sent the query
  * @property currency Three-letter ISO 4217 <a href="/bots/payments#supported-currencies">currency</a> code, or “XTR” for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>
  * @property total_amount Total price in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a price of <code>US$ 1.45</code> pass <code>amount = 145</code>. See the <em>exp</em> parameter in <a href="/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies).
- * @property invoice_payload Bot specified invoice payload
+ * @property invoice_payload Bot-specified invoice payload
  * @property shipping_option_id <em>Optional</em>. Identifier of the shipping option chosen by the user
  * @property order_info <em>Optional</em>. Order information provided by the user
  *
@@ -5327,6 +5504,28 @@ data class RevenueWithdrawalStateFailed(
 }
 
 /**
+ * <p>Describes a transaction with a user.</p>
+ *
+ * @property type Type of the transaction partner, always “user”
+ * @property user Information about the user
+ * @property invoice_payload <em>Optional</em>. Bot-specified invoice payload
+ *
+ * @constructor Creates a [TransactionPartnerUser].
+ * */
+@Serializable
+data class TransactionPartnerUser(
+    val type: String,
+    val user: User,
+    val invoice_payload: String? = null,
+) : TransactionPartner() {
+    override fun toJson() = json.encodeToString(serializer(), this)
+
+    companion object {
+        fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+    }
+}
+
+/**
  * <p>Describes a withdrawal transaction with Fragment.</p>
  *
  * @property type Type of the transaction partner, always “fragment”
@@ -5347,17 +5546,15 @@ data class TransactionPartnerFragment(
 }
 
 /**
- * <p>Describes a transaction with a user.</p>
+ * <p>Describes a withdrawal transaction to the Telegram Ads platform.</p>
  *
- * @property type Type of the transaction partner, always “user”
- * @property user Information about the user
+ * @property type Type of the transaction partner, always “telegram_ads”
  *
- * @constructor Creates a [TransactionPartnerUser].
+ * @constructor Creates a [TransactionPartnerTelegramAds].
  * */
 @Serializable
-data class TransactionPartnerUser(
+data class TransactionPartnerTelegramAds(
     val type: String,
-    val user: User,
 ) : TransactionPartner() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
@@ -5996,7 +6193,7 @@ sealed class TelegramRequest {
     }
 
     /**
-     * <p>Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
+     * <p>Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
@@ -6037,7 +6234,7 @@ sealed class TelegramRequest {
     }
 
     /**
-     * <p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessages">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
+     * <p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessages">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format <code>@channelusername</code>)
@@ -6391,6 +6588,45 @@ sealed class TelegramRequest {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
         override fun toJsonForResponse() = JsonObject(
             json.encodeToJsonElement(serializer(), this).jsonObject + ("method" to JsonPrimitive("sendVideoNote"))
+        ).toString()
+
+        companion object {
+            fun fromJson(string: String) = json.decodeFromString(serializer(), string)
+        }
+    }
+
+    /**
+     * <p>Use this method to send paid media to channel chats. On success, the sent <a href="#message">Message</a> is returned.</p>
+     *
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property star_count The number of Telegram Stars that must be paid to buy access to the media
+     * @property media A JSON-serialized array describing the media to be sent; up to 10 items
+     * @property caption Media caption, 0-1024 characters after entities parsing
+     * @property parse_mode Mode for parsing entities in the media caption. See <a href="#formatting-options">formatting options</a> for more details.
+     * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
+     * @property show_caption_above_media Pass <em>True</em>, if the caption must be shown above the message media
+     * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property reply_parameters Description of the message to reply to
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
+     * */
+    @Serializable
+    data class SendPaidMediaRequest(
+        val chat_id: String,
+        val star_count: Long,
+        val media: List<@Contextual InputPaidMedia>,
+        val caption: String? = null,
+        val parse_mode: ParseMode? = null,
+        val caption_entities: List<MessageEntity>? = null,
+        val show_caption_above_media: Boolean? = null,
+        val disable_notification: Boolean? = null,
+        val protect_content: Boolean? = null,
+        val reply_parameters: ReplyParameters? = null,
+        val reply_markup: @Contextual KeyboardOption? = null,
+    ) : TelegramRequest() {
+        override fun toJsonForRequest() = json.encodeToString(serializer(), this)
+        override fun toJsonForResponse() = JsonObject(
+            json.encodeToJsonElement(serializer(), this).jsonObject + ("method" to JsonPrimitive("sendPaidMedia"))
         ).toString()
 
         companion object {

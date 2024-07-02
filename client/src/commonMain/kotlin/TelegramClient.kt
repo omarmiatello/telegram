@@ -253,7 +253,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
+     * <p>Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)
@@ -303,7 +303,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessages">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
+     * <p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessages">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property from_chat_id Unique identifier for the chat where the original messages were sent (or channel username in the format <code>@channelusername</code>)
@@ -747,6 +747,53 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             disable_notification,
             protect_content,
             message_effect_id,
+            reply_parameters,
+            reply_markup,
+        ).toJsonForRequest(),
+        Message.serializer()
+    )
+
+    /**
+     * <p>Use this method to send paid media to channel chats. On success, the sent <a href="#message">Message</a> is returned.</p>
+     *
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property star_count The number of Telegram Stars that must be paid to buy access to the media
+     * @property media A JSON-serialized array describing the media to be sent; up to 10 items
+     * @property caption Media caption, 0-1024 characters after entities parsing
+     * @property parse_mode Mode for parsing entities in the media caption. See <a href="#formatting-options">formatting options</a> for more details.
+     * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
+     * @property show_caption_above_media Pass <em>True</em>, if the caption must be shown above the message media
+     * @property disable_notification Sends the message <a href="https://telegram.org/blog/channels-2-0#silent-messages">silently</a>. Users will receive a notification with no sound.
+     * @property protect_content Protects the contents of the sent message from forwarding and saving
+     * @property reply_parameters Description of the message to reply to
+     * @property reply_markup Additional interface options. A JSON-serialized object for an <a href="/bots/features#inline-keyboards">inline keyboard</a>, <a href="/bots/features#keyboards">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user
+     *
+     * @return [Message]
+     * */
+    suspend fun sendPaidMedia(
+        chat_id: String,
+        star_count: Long,
+        media: List<InputPaidMedia>,
+        caption: String? = null,
+        parse_mode: ParseMode? = null,
+        caption_entities: List<MessageEntity>? = null,
+        show_caption_above_media: Boolean? = null,
+        disable_notification: Boolean? = null,
+        protect_content: Boolean? = null,
+        reply_parameters: ReplyParameters? = null,
+        reply_markup: KeyboardOption? = null,
+    ) = telegramPost(
+        "$basePath/sendPaidMedia",
+        SendPaidMediaRequest(
+            chat_id,
+            star_count,
+            media,
+            caption,
+            parse_mode,
+            caption_entities,
+            show_caption_above_media,
+            disable_notification,
+            protect_content,
             reply_parameters,
             reply_markup,
         ).toJsonForRequest(),
