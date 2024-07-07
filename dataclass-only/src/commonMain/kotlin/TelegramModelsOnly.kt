@@ -333,6 +333,7 @@ data class ChatFullInfo(
  * @property pinned_message <em>Optional</em>. Specified message was pinned. Note that the Message object in this field will not contain further <em>reply_to_message</em> fields even if it itself is a reply.
  * @property invoice <em>Optional</em>. Message is an invoice for a <a href="#payments">payment</a>, information about the invoice. <a href="#payments">More about payments »</a>
  * @property successful_payment <em>Optional</em>. Message is a service message about a successful payment, information about the payment. <a href="#payments">More about payments »</a>
+ * @property refunded_payment <em>Optional</em>. Message is a service message about a refunded payment, information about the payment. <a href="#payments">More about payments »</a>
  * @property users_shared <em>Optional</em>. Service message: users were shared with the bot
  * @property chat_shared <em>Optional</em>. Service message: a chat was shared with the bot
  * @property connected_website <em>Optional</em>. The domain name of the website on which the user has logged in. <a href="/widgets/login">More about Telegram Login »</a>
@@ -421,6 +422,7 @@ data class Message(
     val pinned_message: MaybeInaccessibleMessage? = null,
     val invoice: Invoice? = null,
     val successful_payment: SuccessfulPayment? = null,
+    val refunded_payment: RefundedPayment? = null,
     val users_shared: UsersShared? = null,
     val chat_shared: ChatShared? = null,
     val connected_website: String? = null,
@@ -3747,6 +3749,25 @@ data class SuccessfulPayment(
     val provider_payment_charge_id: String,
     val shipping_option_id: String? = null,
     val order_info: OrderInfo? = null,
+) : TelegramModel()
+
+/**
+ * <p>This object contains basic information about a refunded payment.</p>
+ *
+ * @property currency Three-letter ISO 4217 <a href="/bots/payments#supported-currencies">currency</a> code, or “XTR” for payments in <a href="https://t.me/BotNews/90">Telegram Stars</a>. Currently, always “XTR”
+ * @property total_amount Total refunded price in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). For example, for a price of <code>US$ 1.45</code>, <code>total_amount = 145</code>. See the <em>exp</em> parameter in <a href="/bots/payments/currencies.json">currencies.json</a>, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies).
+ * @property invoice_payload Bot-specified invoice payload
+ * @property telegram_payment_charge_id Telegram payment identifier
+ * @property provider_payment_charge_id <em>Optional</em>. Provider payment identifier
+ *
+ * @constructor Creates a [RefundedPayment].
+ * */
+data class RefundedPayment(
+    val currency: String,
+    val total_amount: Long,
+    val invoice_payload: String,
+    val telegram_payment_charge_id: String,
+    val provider_payment_charge_id: String? = null,
 ) : TelegramModel()
 
 /**
