@@ -57,6 +57,12 @@ private fun <T> Decoder.tryDeserializers(vararg serializers: KSerializer<out T>)
 
 @Serializable
 @JvmInline
+value class UserId(val longValue: Long) {
+    fun toChatId(): ChatId = ChatId(longValue.toString())
+}
+
+@Serializable
+@JvmInline
 value class ChatId(val stringValue: String) {
     val longValue: Long get() = stringValue.toLong()
 }
@@ -64,15 +70,12 @@ value class ChatId(val stringValue: String) {
 @Serializable
 @JvmInline
 value class MessageId(val longValue: Long)
-
 @Serializable
 @JvmInline
 value class BusinessConnectionId(val stringValue: String)
-
 @Serializable
 @JvmInline
 value class MessageThreadId(val longValue: Long)
-
 @Serializable
 @JvmInline
 value class MessageEffectId(val stringValue: String)
@@ -631,7 +634,7 @@ data class WebhookInfo(
  * */
 @Serializable
 data class User(
-    val id: Long,
+    val id: UserId,
     val is_bot: Boolean,
     val first_name: String,
     val last_name: String? = null,
@@ -666,7 +669,7 @@ data class User(
  * */
 @Serializable
 data class Chat(
-    val id: Long,
+    val id: ChatId,
     val type: String,
     val title: String? = null,
     val username: String? = null,
@@ -733,7 +736,7 @@ data class Chat(
  * */
 @Serializable
 data class ChatFullInfo(
-    val id: Long,
+    val id: ChatId,
     val type: String,
     val accent_color_id: Long,
     val max_reaction_count: Long,
@@ -1565,7 +1568,7 @@ data class Contact(
     val phone_number: String,
     val first_name: String,
     val last_name: String? = null,
-    val user_id: Long? = null,
+    val user_id: UserId? = null,
     val vcard: String? = null,
 ) : TelegramModel() {
     override fun toJson() = json.encodeToString(serializer(), this)
@@ -2076,7 +2079,7 @@ data class ForumTopicEdited(
  * */
 @Serializable
 data class SharedUser(
-    val user_id: Long,
+    val user_id: UserId,
     val first_name: String? = null,
     val last_name: String? = null,
     val username: String? = null,
@@ -3531,7 +3534,7 @@ data class BotCommandScopeChatAdministrators(
 data class BotCommandScopeChatMember(
     val type: String,
     val chat_id: ChatId,
-    val user_id: Long,
+    val user_id: UserId,
 ) : BotCommandScope() {
     override fun toJson() = json.encodeToString(serializer(), this)
 
@@ -3816,7 +3819,7 @@ data class UserChatBoosts(
  * */
 @Serializable
 data class BusinessConnection(
-    val id: String,
+    val id: BusinessConnectionId,
     val user: User,
     val user_chat_id: ChatId,
     val date: Long,
@@ -6997,7 +7000,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class GetUserProfilePhotosRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val offset: Long? = null,
         val limit: Long? = null,
     ) : TelegramRequest() {
@@ -7044,7 +7047,7 @@ sealed class TelegramRequest {
     @Serializable
     data class BanChatMemberRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
         val until_date: Long? = null,
         val revoke_messages: Boolean? = null,
     ) : TelegramRequest() {
@@ -7068,7 +7071,7 @@ sealed class TelegramRequest {
     @Serializable
     data class UnbanChatMemberRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
         val only_if_banned: Boolean? = null,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
@@ -7093,7 +7096,7 @@ sealed class TelegramRequest {
     @Serializable
     data class RestrictChatMemberRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
         val permissions: ChatPermissions,
         val use_independent_chat_permissions: Boolean? = null,
         val until_date: Long? = null,
@@ -7132,7 +7135,7 @@ sealed class TelegramRequest {
     @Serializable
     data class PromoteChatMemberRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
         val is_anonymous: Boolean? = null,
         val can_manage_chat: Boolean? = null,
         val can_delete_messages: Boolean? = null,
@@ -7169,7 +7172,7 @@ sealed class TelegramRequest {
     @Serializable
     data class SetChatAdministratorCustomTitleRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
         val custom_title: String,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
@@ -7366,7 +7369,7 @@ sealed class TelegramRequest {
     @Serializable
     data class ApproveChatJoinRequestRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
         override fun toJsonForResponse() = JsonObject(
@@ -7390,7 +7393,7 @@ sealed class TelegramRequest {
     @Serializable
     data class DeclineChatJoinRequestRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
         override fun toJsonForResponse() = JsonObject(
@@ -7641,7 +7644,7 @@ sealed class TelegramRequest {
     @Serializable
     data class GetChatMemberRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
         override fun toJsonForResponse() = JsonObject(
@@ -8005,7 +8008,7 @@ sealed class TelegramRequest {
     @Serializable
     data class GetUserChatBoostsRequest(
         val chat_id: ChatId,
-        val user_id: Long,
+        val user_id: UserId,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
         override fun toJsonForResponse() = JsonObject(
@@ -8677,7 +8680,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class UploadStickerFileRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val sticker: @Contextual Any,
         val sticker_format: String,
     ) : TelegramRequest() {
@@ -8703,7 +8706,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class CreateNewStickerSetRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val name: String,
         val title: String,
         val stickers: List<InputSticker>,
@@ -8729,7 +8732,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class AddStickerToSetRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val name: String,
         val sticker: InputSticker,
     ) : TelegramRequest() {
@@ -8799,7 +8802,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class ReplaceStickerInSetRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val name: String,
         val old_sticker: String,
         val sticker: InputSticker,
@@ -8912,7 +8915,7 @@ sealed class TelegramRequest {
     @Serializable
     data class SetStickerSetThumbnailRequest(
         val name: String,
-        val user_id: Long,
+        val user_id: UserId,
         val format: String,
         val thumbnail: String? = null,
     ) : TelegramRequest() {
@@ -9238,7 +9241,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class RefundStarPaymentRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val telegram_payment_charge_id: String,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
@@ -9262,7 +9265,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class SetPassportDataErrorsRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val errors: List<@Contextual PassportElementError>,
     ) : TelegramRequest() {
         override fun toJsonForRequest() = json.encodeToString(serializer(), this)
@@ -9329,7 +9332,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class SetGameScoreRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val score: Long,
         val force: Boolean? = null,
         val disable_edit_message: Boolean? = null,
@@ -9359,7 +9362,7 @@ sealed class TelegramRequest {
      * */
     @Serializable
     data class GetGameHighScoresRequest(
-        val user_id: Long,
+        val user_id: UserId,
         val chat_id: ChatId? = null,
         val message_id: MessageId? = null,
         val inline_message_id: String? = null,
