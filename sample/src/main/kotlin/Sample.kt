@@ -1,11 +1,8 @@
-import com.github.omarmiatello.telegram.InlineKeyboardButton
-import com.github.omarmiatello.telegram.InlineKeyboardMarkup
-import com.github.omarmiatello.telegram.ParseMode
-import com.github.omarmiatello.telegram.TelegramRequest
+import com.github.omarmiatello.telegram.*
 
 fun main() {
     val sendMessageRequest = TelegramRequest.SendMessageRequest(
-        chat_id = "chat123",
+        chat_id = ChatId("chat123"),
         text = """There are *23 new demos*: [Bloodstained: Ritual of the Night](https://stadia.google.com/game/bloodstained-ritual-of-the-night) - Play for 60 min - available also with #StadiaPro
 [Embr](https://stadia.google.com/game/embr) - Play for 60 min
 [Enter The Gungeon](https://stadia.google.com/game/enter-the-gungeon) - Play for 30 min #LocalMultiplayer
@@ -40,4 +37,7 @@ fun main() {
     )
     println("Request: ${sendMessageRequest.toJsonForRequest()}")
     println("Response: ${sendMessageRequest.toJsonForResponse()}")
+
+    val jsonString = sendMessageRequest.toJsonForResponse()
+    println("Parse: ${TelegramRequest.SendMessageRequest.fromJson(jsonString)}")
 }

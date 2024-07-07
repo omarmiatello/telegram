@@ -450,17 +450,6 @@ data class Message(
 ) : MaybeInaccessibleMessage()
 
 /**
- * <p>This object represents a unique message identifier.</p>
- *
- * @property message_id Unique message identifier
- *
- * @constructor Creates a [MessageId].
- * */
-data class MessageId(
-    val message_id: Long,
-) : TelegramModel()
-
-/**
  * <p>This object describes a message that was deleted or is otherwise inaccessible to the bot.</p>
  *
  * @property chat Chat the message belonged to
