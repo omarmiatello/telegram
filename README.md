@@ -9,18 +9,18 @@ https://core.telegram.org/bots/api
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
-  - 188 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
-  - Contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt)
-  - [See example](#example-with-ktor-server): Example with Ktor server
-  - [See example](#telegram-webhook-parse-the-telegram-request): Telegram Webhook: Parse the Telegram request
-  - [See example](#reply-to-the-user-with-a-message): Reply to the user with a Message
+    - 188 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
+    - Contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt)
+    - [See example](#example-with-ktor-server): Example with Ktor server
+    - [See example](#telegram-webhook-parse-the-telegram-request): Telegram Webhook: Parse the Telegram request
+    - [See example](#reply-to-the-user-with-a-message): Reply to the user with a Message
 - Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/commonMain/kotlin/TelegramClient.kt))
-  - 188 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 121 method for Telegram bot API
-  - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
+    - 188 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 121 method for Telegram bot API
+    - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
 - Module [:dataclass-only:](#how-to-use-dataclass-only-module) **(not recommended)**
-  - 188 `data class` only (serializer not included)
-  - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/commonMain/kotlin/TelegramModelsOnly.kt)
-  - Could be used with [Gson](https://github.com/google/gson) or plain Java / Kotlin project.
+    - 188 `data class` only (serializer not included)
+    - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/commonMain/kotlin/TelegramModelsOnly.kt)
+    - Could be used with [Gson](https://github.com/google/gson) or plain Java / Kotlin project.
 
 
 ### This project use [Kotlin Multiplatform](https://kotlinlang.org/docs/mpp-intro.html)
