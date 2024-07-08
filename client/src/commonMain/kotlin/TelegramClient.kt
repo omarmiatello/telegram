@@ -12,7 +12,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpClient()) {
     private val basePath = "https://api.telegram.org/bot$apiKey"
-    private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = false }
+    private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = false; isLenient = true }
 
     private suspend fun <T> telegramGet(path: String, response: KSerializer<T>): TelegramResponse<T> {
         val responseString: String = httpClient.get(path).body()

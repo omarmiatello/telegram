@@ -30,11 +30,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import kotlin.jvm.JvmInline
 
-private val json = Json {
-    ignoreUnknownKeys = true
-    prettyPrint = true
-    encodeDefaults = false
-}
+private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = false; isLenient = true; }
 
 sealed class TelegramModel {
     abstract fun toJson(): String
@@ -70,12 +66,15 @@ value class ChatId(val stringValue: String) {
 @Serializable
 @JvmInline
 value class MessageId(val longValue: Long)
+
 @Serializable
 @JvmInline
 value class BusinessConnectionId(val stringValue: String)
+
 @Serializable
 @JvmInline
 value class MessageThreadId(val longValue: Long)
+
 @Serializable
 @JvmInline
 value class MessageEffectId(val stringValue: String)
