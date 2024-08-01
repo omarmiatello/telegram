@@ -10,9 +10,10 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
+
 class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpClient()) {
     private val basePath = "https://api.telegram.org/bot$apiKey"
-    private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = false; isLenient = true }
+    private val json = Json { ignoreUnknownKeys = true; prettyPrint = true; encodeDefaults = false; isLenient = true; }
 
     private suspend fun <T> telegramGet(path: String, response: KSerializer<T>): TelegramResponse<T> {
         val responseString: String = httpClient.get(path).body()
@@ -55,6 +56,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ListSerializer(Update.serializer())
     )
+
     /**
      * <p>Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized <a href="#update">Update</a>. In case of an unsuccessful request, we will give up after a reasonable amount of attempts. Returns <em>True</em> on success.</p><p>If you'd like to make sure that the webhook was set by you, you can specify secret data in the parameter <em>secret_token</em>. If specified, the request will contain a header “X-Telegram-Bot-Api-Secret-Token” with the secret token as content.</p><blockquote>
      *  <p><strong>Notes</strong><br><strong>1.</strong> You will not be able to receive updates using <a href="#getupdates">getUpdates</a> for as long as an outgoing webhook is set up.<br><strong>2.</strong> To use a self-signed certificate, you need to upload your <a href="/bots/self-signed">public key certificate</a> using <em>certificate</em> parameter. Please upload as InputFile, sending a String will not work.<br><strong>3.</strong> Ports currently supported <em>for webhooks</em>: <strong>443, 80, 88, 8443</strong>.</p>
@@ -92,6 +94,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to remove webhook integration if you decide to switch back to <a href="#getupdates">getUpdates</a>. Returns <em>True</em> on success.</p>
      *
@@ -108,6 +111,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get current webhook status. Requires no parameters. On success, returns a <a href="#webhookinfo">WebhookInfo</a> object. If the bot is using <a href="#getupdates">getUpdates</a>, will return an object with the <em>url</em> field empty.</p>
      *
@@ -125,6 +129,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Boolean]
      * */
     suspend fun logOut() = telegramGet("$basePath/logOut", Boolean.serializer())
+
     /**
      * <p>Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method to ensure that the bot isn't launched again after server restart. The method will return error 429 in the first 10 minutes after the bot is launched. Returns <em>True</em> on success. Requires no parameters.</p>
      *
@@ -132,6 +137,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
      * @return [Boolean]
      * */
     suspend fun close() = telegramGet("$basePath/close", Boolean.serializer())
+
     /**
      * <p>Use this method to send text messages. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -181,6 +187,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -212,6 +219,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
      *
@@ -243,6 +251,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ListSerializer(MessageId.serializer())
     )
+
     /**
      * <p>Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessage">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href="#messageid">MessageId</a> of the sent message on success.</p>
      *
@@ -292,6 +301,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         MessageId.serializer()
     )
+
     /**
      * <p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href="#poll">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href="#forwardmessages">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of <a href="#messageid">MessageId</a> of the sent messages is returned.</p>
      *
@@ -326,6 +336,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ListSerializer(MessageId.serializer())
     )
+
     /**
      * <p>Use this method to send photos. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -381,6 +392,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent <a href="#message">Message</a> is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.</p><p>For sending voice messages, use the <a href="#sendvoice">sendVoice</a> method instead.</p>
      *
@@ -442,6 +454,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send general files. On success, the sent <a href="#message">Message</a> is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future.</p>
      *
@@ -497,6 +510,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as <a href="#document">Document</a>). On success, the sent <a href="#message">Message</a> is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future.</p>
      *
@@ -567,6 +581,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent <a href="#message">Message</a> is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future.</p>
      *
@@ -634,6 +649,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as <a href="#audio">Audio</a> or <a href="#document">Document</a>). On success, the sent <a href="#message">Message</a> is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future.</p>
      *
@@ -686,6 +702,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>As of <a href="https://telegram.org/blog/video-messages-and-telescope">v.4.0</a>, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -735,6 +752,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send paid media to channel chats. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -781,6 +799,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of <a href="#message">Messages</a> that were sent is returned.</p>
      *
@@ -818,6 +837,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ListSerializer(Message.serializer())
     )
+
     /**
      * <p>Use this method to send point on the map. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -873,6 +893,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send information about a venue. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -934,6 +955,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send phone contacts. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -983,6 +1005,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send a native poll. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -1062,6 +1085,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to send an animated emoji that will display a random value. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
@@ -1102,6 +1126,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns <em>True</em> on success.</p><blockquote>
      *  <p>Example: The <a href="https://t.me/imagebot">ImageBot</a> needs some time to process a request and upload the image. Instead of sending a text message along the lines of “Retrieving image, please wait…”, the bot may use <a href="#sendchataction">sendChatAction</a> with <em>action</em> = <em>upload_photo</em>. The user will see a “sending photo” status for the bot.</p>
@@ -1129,6 +1154,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Returns <em>True</em> on success.</p>
      *
@@ -1154,6 +1180,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get a list of profile pictures for a user. Returns a <a href="#userprofilephotos">UserProfilePhotos</a> object.</p>
      *
@@ -1176,6 +1203,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         UserProfilePhotos.serializer()
     )
+
     /**
      * <p>Use this method to get basic information about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a <a href="#file">File</a> object is returned. The file can then be downloaded via the link <code>https://api.telegram.org/file/bot&lt;token&gt;/&lt;file_path&gt;</code>, where <code>&lt;file_path&gt;</code> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling <a href="#getfile">getFile</a> again.</p><p><strong>Note:</strong> This function may not preserve the original file name and MIME type. You should save the file's MIME type and name (if available) when the File object is received.</p>
      *
@@ -1192,6 +1220,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         File.serializer()
     )
+
     /**
      * <p>Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless <a href="#unbanchatmember">unbanned</a> first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1217,6 +1246,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to unban a previously banned user in a supergroup or channel. The user will <strong>not</strong> return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be <strong>removed</strong> from the chat. If you don't want this, use the parameter <em>only_if_banned</em>. Returns <em>True</em> on success.</p>
      *
@@ -1239,6 +1269,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass <em>True</em> for all permissions to lift restrictions from a user. Returns <em>True</em> on success.</p>
      *
@@ -1267,6 +1298,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass <em>False</em> for all boolean parameters to demote a user. Returns <em>True</em> on success.</p>
      *
@@ -1331,6 +1363,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to set a custom title for an administrator in a supergroup promoted by the bot. Returns <em>True</em> on success.</p>
      *
@@ -1353,6 +1386,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to ban a channel chat in a supergroup or a channel. Until the chat is <a href="#unbanchatsenderchat">unbanned</a>, the owner of the banned chat won't be able to send messages on behalf of <strong>any of their channels</strong>. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1372,6 +1406,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to unban a previously banned channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1391,6 +1426,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the <em>can_restrict_members</em> administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1413,6 +1449,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as <em>String</em> on success.</p><blockquote>
      *  <p>Note: Each administrator in a chat generates their own invite links. Bots can't use invite links generated by other administrators. If you want your bot to work with invite links, it will need to generate its own link using <a href="#exportchatinvitelink">exportChatInviteLink</a> or by calling the <a href="#getchat">getChat</a> method. If your bot needs to generate a new primary invite link replacing its previous one, use <a href="#exportchatinvitelink">exportChatInviteLink</a> again.</p>
@@ -1431,6 +1468,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         String.serializer()
     )
+
     /**
      * <p>Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method <a href="#revokechatinvitelink">revokeChatInviteLink</a>. Returns the new invite link as <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
      *
@@ -1459,6 +1497,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ChatInviteLink.serializer()
     )
+
     /**
      * <p>Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
      *
@@ -1490,6 +1529,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ChatInviteLink.serializer()
     )
+
     /**
      * <p>Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
      *
@@ -1509,6 +1549,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ChatInviteLink.serializer()
     )
+
     /**
      * <p>Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the <em>can_invite_users</em> administrator right. Returns <em>True</em> on success.</p>
      *
@@ -1528,6 +1569,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the <em>can_invite_users</em> administrator right. Returns <em>True</em> on success.</p>
      *
@@ -1547,6 +1589,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1566,6 +1609,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to delete a chat photo. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1582,6 +1626,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to change the title of a chat. Titles can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1601,6 +1646,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1620,11 +1666,13 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Identifier of a message to pin
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be pinned
      * @property disable_notification Pass <em>True</em> if it is not necessary to send a notification to all chat members about the new pinned message. Notifications are always disabled in channels and private chats.
      *
      * @return [Boolean]
@@ -1632,35 +1680,42 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     suspend fun pinChatMessage(
         chat_id: ChatId,
         message_id: MessageId,
+        business_connection_id: BusinessConnectionId? = null,
         disable_notification: Boolean? = null,
     ) = telegramPost(
         "$basePath/pinChatMessage",
         PinChatMessageRequest(
             chat_id,
             message_id,
+            business_connection_id,
             disable_notification,
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
-     * @property message_id Identifier of a message to unpin. If not specified, the most recent pinned message (by sending date) will be unpinned.
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be unpinned
+     * @property message_id Identifier of the message to unpin. Required if <em>business_connection_id</em> is specified. If not specified, the most recent pinned message (by sending date) will be unpinned.
      *
      * @return [Boolean]
      * */
     suspend fun unpinChatMessage(
         chat_id: ChatId,
+        business_connection_id: BusinessConnectionId? = null,
         message_id: MessageId? = null,
     ) = telegramPost(
         "$basePath/unpinChatMessage",
         UnpinChatMessageRequest(
             chat_id,
+            business_connection_id,
             message_id,
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns <em>True</em> on success.</p>
      *
@@ -1677,6 +1732,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method for your bot to leave a group, supergroup or channel. Returns <em>True</em> on success.</p>
      *
@@ -1693,6 +1749,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get up-to-date information about the chat. Returns a <a href="#chatfullinfo">ChatFullInfo</a> object on success.</p>
      *
@@ -1709,6 +1766,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ChatFullInfo.serializer()
     )
+
     /**
      * <p>Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of <a href="#chatmember">ChatMember</a> objects.</p>
      *
@@ -1725,6 +1783,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ListSerializer(ChatMember.serializer())
     )
+
     /**
      * <p>Use this method to get the number of members in a chat. Returns <em>Int</em> on success.</p>
      *
@@ -1741,6 +1800,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Int.serializer()
     )
+
     /**
      * <p>Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat. Returns a <a href="#chatmember">ChatMember</a> object on success.</p>
      *
@@ -1760,6 +1820,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ChatMember.serializer()
     )
+
     /**
      * <p>Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field <em>can_set_sticker_set</em> optionally returned in <a href="#getchat">getChat</a> requests to check if the bot can use this method. Returns <em>True</em> on success.</p>
      *
@@ -1779,6 +1840,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field <em>can_set_sticker_set</em> optionally returned in <a href="#getchat">getChat</a> requests to check if the bot can use this method. Returns <em>True</em> on success.</p>
      *
@@ -1795,13 +1857,16 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of <a href="#sticker">Sticker</a> objects.</p>
      *
      *
      * @return [List<Sticker>]
      * */
-    suspend fun getForumTopicIconStickers() = telegramGet("$basePath/getForumTopicIconStickers", ListSerializer(Sticker.serializer()))
+    suspend fun getForumTopicIconStickers() =
+        telegramGet("$basePath/getForumTopicIconStickers", ListSerializer(Sticker.serializer()))
+
     /**
      * <p>Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights. Returns information about the created topic as a <a href="#forumtopic">ForumTopic</a> object.</p>
      *
@@ -1827,6 +1892,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ForumTopic.serializer()
     )
+
     /**
      * <p>Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have <em>can_manage_topics</em> administrator rights, unless it is the creator of the topic. Returns <em>True</em> on success.</p>
      *
@@ -1852,6 +1918,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to close an open topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights, unless it is the creator of the topic. Returns <em>True</em> on success.</p>
      *
@@ -1871,6 +1938,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to reopen a closed topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights, unless it is the creator of the topic. Returns <em>True</em> on success.</p>
      *
@@ -1890,6 +1958,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_delete_messages</em> administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1909,6 +1978,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the <em>can_pin_messages</em> administrator right in the supergroup. Returns <em>True</em> on success.</p>
      *
@@ -1928,6 +1998,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have <em>can_manage_topics</em> administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1947,6 +2018,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -1963,6 +2035,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights. The topic will be automatically unhidden if it was hidden. Returns <em>True</em> on success.</p>
      *
@@ -1979,6 +2052,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights. The topic will be automatically closed if it was open. Returns <em>True</em> on success.</p>
      *
@@ -1995,6 +2069,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights. Returns <em>True</em> on success.</p>
      *
@@ -2011,6 +2086,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the <em>can_pin_messages</em> administrator right in the supergroup. Returns <em>True</em> on success.</p>
      *
@@ -2027,6 +2103,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to send answers to callback queries sent from <a href="/bots/features#inline-keyboards">inline keyboards</a>. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, <em>True</em> is returned.</p><blockquote>
      *  <p>Alternatively, the user can be redirected to the specified Game URL. For this option to work, you must first create a game for your bot via <a href="https://t.me/botfather">@BotFather</a> and accept the terms. Otherwise, you may use links like <code>t.me/your_bot?start=XXXX</code> that open your bot with a parameter.</p>
@@ -2057,6 +2134,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a <a href="#userchatboosts">UserChatBoosts</a> object.</p>
      *
@@ -2076,6 +2154,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         UserChatBoosts.serializer()
     )
+
     /**
      * <p>Use this method to get information about the connection of the bot with a business account. Returns a <a href="#businessconnection">BusinessConnection</a> object on success.</p>
      *
@@ -2092,6 +2171,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         BusinessConnection.serializer()
     )
+
     /**
      * <p>Use this method to change the list of the bot's commands. See <a href="/bots/features#commands">this manual</a> for more details about bot commands. Returns <em>True</em> on success.</p>
      *
@@ -2114,6 +2194,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to delete the list of the bot's commands for the given scope and user language. After deletion, <a href="#determining-list-of-commands">higher level commands</a> will be shown to affected users. Returns <em>True</em> on success.</p>
      *
@@ -2133,6 +2214,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of <a href="#botcommand">BotCommand</a> objects. If commands aren't set, an empty list is returned.</p>
      *
@@ -2152,6 +2234,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ListSerializer(BotCommand.serializer())
     )
+
     /**
      * <p>Use this method to change the bot's name. Returns <em>True</em> on success.</p>
      *
@@ -2171,6 +2254,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get the current bot name for the given user language. Returns <a href="#botname">BotName</a> on success.</p>
      *
@@ -2187,6 +2271,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         BotName.serializer()
     )
+
     /**
      * <p>Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns <em>True</em> on success.</p>
      *
@@ -2206,6 +2291,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get the current bot description for the given user language. Returns <a href="#botdescription">BotDescription</a> on success.</p>
      *
@@ -2222,6 +2308,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         BotDescription.serializer()
     )
+
     /**
      * <p>Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns <em>True</em> on success.</p>
      *
@@ -2241,6 +2328,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get the current bot short description for the given user language. Returns <a href="#botshortdescription">BotShortDescription</a> on success.</p>
      *
@@ -2257,6 +2345,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         BotShortDescription.serializer()
     )
+
     /**
      * <p>Use this method to change the bot's menu button in a private chat, or the default menu button. Returns <em>True</em> on success.</p>
      *
@@ -2276,6 +2365,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns <a href="#menubutton">MenuButton</a> on success.</p>
      *
@@ -2292,6 +2382,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         MenuButton.serializer()
     )
+
     /**
      * <p>Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are free to modify the list before adding the bot. Returns <em>True</em> on success.</p>
      *
@@ -2311,6 +2402,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to get the current default administrator rights of the bot. Returns <a href="#chatadministratorrights">ChatAdministratorRights</a> on success.</p>
      *
@@ -2370,6 +2462,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
@@ -2410,6 +2503,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
@@ -2441,6 +2535,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to edit live location messages. A location can be edited until its <em>live_period</em> expires or editing is explicitly disabled by a call to <a href="#stopmessagelivelocation">stopMessageLiveLocation</a>. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
@@ -2487,6 +2582,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to stop updating a live location message before <em>live_period</em> expires. On success, if the message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned.</p>
      *
@@ -2515,6 +2611,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>
      *
@@ -2543,6 +2640,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to stop a poll which was sent by the bot. On success, the stopped <a href="#poll">Poll</a> is returned.</p>
      *
@@ -2568,6 +2666,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Poll.serializer()
     )
+
     /**
      * <p>Use this method to delete a message, including service messages, with the following limitations:<br>- A message can only be deleted if it was sent less than 48 hours ago.<br>- Service messages about a supergroup, channel, or forum topic creation can't be deleted.<br>- A dice message in a private chat can only be deleted if it was sent more than 24 hours ago.<br>- Bots can delete outgoing messages in private chats, groups, and supergroups.<br>- Bots can delete incoming messages in private chats.<br>- Bots granted <em>can_post_messages</em> permissions can delete outgoing messages in channels.<br>- If the bot is an administrator of a group, it can delete any message there.<br>- If the bot has <em>can_delete_messages</em> permission in a supergroup or a channel, it can delete any message there.<br>Returns <em>True</em> on success.</p>
      *
@@ -2587,6 +2686,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns <em>True</em> on success.</p>
      *
@@ -2652,6 +2752,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to get a sticker set. On success, a <a href="#stickerset">StickerSet</a> object is returned.</p>
      *
@@ -2668,6 +2769,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         StickerSet.serializer()
     )
+
     /**
      * <p>Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of <a href="#sticker">Sticker</a> objects.</p>
      *
@@ -2684,6 +2786,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         ListSerializer(Sticker.serializer())
     )
+
     /**
      * <p>Use this method to upload a file with a sticker for later use in the <a href="#createnewstickerset">createNewStickerSet</a>, <a href="#addstickertoset">addStickerToSet</a>, or <a href="#replacestickerinset">replaceStickerInSet</a> methods (the file can be used multiple times). Returns the uploaded <a href="#file">File</a> on success.</p>
      *
@@ -2706,6 +2809,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         File.serializer()
     )
+
     /**
      * <p>Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns <em>True</em> on success.</p>
      *
@@ -2737,6 +2841,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns <em>True</em> on success.</p>
      *
@@ -2759,6 +2864,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to move a sticker in a set created by the bot to a specific position. Returns <em>True</em> on success.</p>
      *
@@ -2778,6 +2884,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to delete a sticker from a set created by the bot. Returns <em>True</em> on success.</p>
      *
@@ -2794,6 +2901,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to replace an existing sticker in a sticker set with a new one. The method is equivalent to calling <a href="#deletestickerfromset">deleteStickerFromSet</a>, then <a href="#addstickertoset">addStickerToSet</a>, then <a href="#setstickerpositioninset">setStickerPositionInSet</a>. Returns <em>True</em> on success.</p>
      *
@@ -2819,6 +2927,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns <em>True</em> on success.</p>
      *
@@ -2838,6 +2947,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns <em>True</em> on success.</p>
      *
@@ -2857,6 +2967,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to change the <a href="#maskposition">mask position</a> of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns <em>True</em> on success.</p>
      *
@@ -2876,6 +2987,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to set the title of a created sticker set. Returns <em>True</em> on success.</p>
      *
@@ -2895,13 +3007,14 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns <em>True</em> on success.</p>
      *
      * @property name Sticker set name
      * @property user_id User identifier of the sticker set owner
      * @property format Format of the thumbnail, must be one of “static” for a <strong>.WEBP</strong> or <strong>.PNG</strong> image, “animated” for a <strong>.TGS</strong> animation, or “video” for a <strong>WEBM</strong> video
-     * @property thumbnail A <strong>.WEBP</strong> or <strong>.PNG</strong> image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a <strong>.TGS</strong> animation with a thumbnail up to 32 kilobytes in size (see <a href="/stickers#animated-sticker-requirements"></a><a href="https://core.telegram.org/stickers#animated-sticker-requirements">https://core.telegram.org/stickers#animated-sticker-requirements</a> for animated sticker technical requirements), or a <strong>WEBM</strong> video with the thumbnail up to 32 kilobytes in size; see <a href="/stickers#video-sticker-requirements"></a><a href="https://core.telegram.org/stickers#video-sticker-requirements">https://core.telegram.org/stickers#video-sticker-requirements</a> for video sticker technical requirements. Pass a <em>file_id</em> as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>. Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.
+     * @property thumbnail A <strong>.WEBP</strong> or <strong>.PNG</strong> image with the thumbnail, must be up to 128 kilobytes in size and have a width and height of exactly 100px, or a <strong>.TGS</strong> animation with a thumbnail up to 32 kilobytes in size (see <a href="/stickers#animation-requirements"></a><a href="https://core.telegram.org/stickers#animation-requirements">https://core.telegram.org/stickers#animation-requirements</a> for animated sticker technical requirements), or a <strong>WEBM</strong> video with the thumbnail up to 32 kilobytes in size; see <a href="/stickers#video-requirements"></a><a href="https://core.telegram.org/stickers#video-requirements">https://core.telegram.org/stickers#video-requirements</a> for video sticker technical requirements. Pass a <em>file_id</em> as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. <a href="#sending-files">More information on Sending Files »</a>. Animated and video sticker set thumbnails can't be uploaded via HTTP URL. If omitted, then the thumbnail is dropped and the first sticker is used as the thumbnail.
      *
      * @return [Boolean]
      * */
@@ -2920,6 +3033,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to set the thumbnail of a custom emoji sticker set. Returns <em>True</em> on success.</p>
      *
@@ -2939,6 +3053,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to delete a sticker set that was created by the bot. Returns <em>True</em> on success.</p>
      *
@@ -2989,6 +3104,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Use this method to set the result of an interaction with a <a href="/bots/webapps">Web App</a> and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a <a href="#sentwebappmessage">SentWebAppMessage</a> object is returned.</p>
      *
@@ -3108,6 +3224,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to create a link for an invoice. Returns the created invoice link as <em>String</em> on success.</p>
      *
@@ -3181,6 +3298,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         String.serializer()
     )
+
     /**
      * <p>If you sent an invoice requesting a shipping address and the parameter <em>is_flexible</em> was specified, the Bot API will send an <a href="#update">Update</a> with a <em>shipping_query</em> field to the bot. Use this method to reply to shipping queries. On success, <em>True</em> is returned.</p>
      *
@@ -3206,6 +3324,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Once the user has confirmed their payment and shipping details, the Bot API sends the final confirmation in the form of an <a href="#update">Update</a> with the field <em>pre_checkout_query</em>. Use this method to respond to such pre-checkout queries. On success, <em>True</em> is returned. <strong>Note:</strong> The Bot API must receive an answer within 10 seconds after the pre-checkout query was sent.</p>
      *
@@ -3228,6 +3347,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Boolean.serializer()
     )
+
     /**
      * <p>Returns the bot's Telegram Star transactions in chronological order. On success, returns a <a href="#startransactions">StarTransactions</a> object.</p>
      *
@@ -3247,6 +3367,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         StarTransactions.serializer()
     )
+
     /**
      * <p>Refunds a successful payment in <a href="https://t.me/BotNews/90">Telegram Stars</a>. Returns <em>True</em> on success.</p>
      *
@@ -3331,6 +3452,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the <a href="#message">Message</a> is returned, otherwise <em>True</em> is returned. Returns an error, if the new score is not greater than the user's current score in the chat and <em>force</em> is <em>False</em>.</p>
      *
@@ -3365,6 +3487,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         ).toJsonForRequest(),
         Message.serializer()
     )
+
     /**
      * <p>Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of <a href="#gamehighscore">GameHighScore</a> objects.</p><blockquote>
      *  <p>This method will currently return scores for the target user, plus two of their closest neighbors on each side. Will also return the top three users if the user and their neighbors are not among them. Please note that this behavior is subject to change.</p>

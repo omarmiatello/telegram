@@ -5,20 +5,20 @@
 Full API documentation of Telegram Bot API
 https://core.telegram.org/bots/api
 
-**Library API version 7.7.3**
+**Library API version 7.8**
 
 This library has 3 modules:
 - Module [:dataclass:](#how-to-use-dataclass-module)
-    - 188 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
+    - 198 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization)
     - Contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt)
     - [See example](#example-with-ktor-server): Example with Ktor server
     - [See example](#telegram-webhook-parse-the-telegram-request): Telegram Webhook: Parse the Telegram request
     - [See example](#reply-to-the-user-with-a-message): Reply to the user with a Message
 - Module [:client:](#how-to-use-client-module) ([TelegramModels.kt](dataclass/src/commonMain/kotlin/TelegramModels.kt) + [TelegramClient.kt](client/src/commonMain/kotlin/TelegramClient.kt))
-    - 188 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 121 method for Telegram bot API
+    - 198 `data class` with [Kotlinx/Serialization](https://github.com/Kotlin/kotlinx.serialization) + [Ktor client](https://ktor.io/clients/) with 122 methods for Telegram bot API
     - [See example](#send-a-message-to-a-usergroupchannel): Send a message to a user/group/channel
 - Module [:dataclass-only:](#how-to-use-dataclass-only-module) **(not recommended)**
-    - 188 `data class` only (serializer not included)
+    - 198 `data class` only (serializer not included)
     - Contains only 1 file: [TelegramModelsOnly.kt](dataclass-only/src/commonMain/kotlin/TelegramModelsOnly.kt)
     - Could be used with [Gson](https://github.com/google/gson) or plain Java / Kotlin project.
 
@@ -45,7 +45,7 @@ This module contains only 1 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:7.7.3")
+implementation("com.github.omarmiatello.telegram:dataclass:7.8")
 ```
 
 ### Example 1 - Ktor 3.0 server
@@ -117,7 +117,7 @@ See [https://github.com/omarmiatello/github-actions-kotlin-script-template](http
 #!/usr/bin/env kotlin
 @file:Repository("https://repo.maven.apache.org/maven2")
 @file:DependsOn("com.github.omarmiatello.kotlin-script-toolbox:zero-setup:0.0.3")
-@file:DependsOn("com.github.omarmiatello.telegram:client-jvm:7.7.3")
+@file:DependsOn("com.github.omarmiatello.telegram:client-jvm:7.8")
 @file:DependsOn("io.ktor:ktor-client-okhttp-jvm:3.0.0")  // required for com.github.omarmiatello.telegram:client
 
 import com.github.omarmiatello.kotlinscripttoolbox.core.launchKotlinScriptToolbox
@@ -265,7 +265,7 @@ This module contains only 2 file: [TelegramModels.kt](dataclass/src/commonMain/k
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:7.7.3")
+implementation("com.github.omarmiatello.telegram:client:7.8")
 ```
 
 ### Send a message to a user/group/channel
@@ -331,13 +331,13 @@ NOTE: Not for beginner. Guide [here](docs/dataclass-only.md).
 Add this in your `build.gradle.ktx` file:
 ```kotlin
 // alternative, contains: `data class` with Kotlinx/Serialization + Ktor client
-implementation("com.github.omarmiatello.telegram:client:7.7.3")
+implementation("com.github.omarmiatello.telegram:client:7.8")
 
 // alternative, contains only: `data class` with Kotlinx/Serialization
-implementation("com.github.omarmiatello.telegram:dataclass:7.7.3")
+implementation("com.github.omarmiatello.telegram:dataclass:7.8")
 
 // alternative, contains only: `data class` (for plain Java/Kotlin project)
-implementation("com.github.omarmiatello.telegram:dataclass-only:7.7.3")
+implementation("com.github.omarmiatello.telegram:dataclass-only:7.8")
 ```
 
 ## License
