@@ -279,8 +279,8 @@ data class ChatFullInfo(
  * @property date Date the message was sent in Unix time. It is always a positive number, representing a valid date.
  * @property chat Chat the message belongs to
  * @property message_thread_id <em>Optional</em>. Unique identifier of a message thread to which the message belongs; for supergroups only
- * @property from <em>Optional</em>. Sender of the message; empty for messages sent to channels. For backward compatibility, the field contains a fake sender user in non-channel chats, if the message was sent on behalf of a chat.
- * @property sender_chat <em>Optional</em>. Sender of the message, sent on behalf of a chat. For example, the channel itself for channel posts, the supergroup itself for messages from anonymous group administrators, the linked channel for messages automatically forwarded to the discussion group. For backward compatibility, the field <em>from</em> contains a fake sender user in non-channel chats, if the message was sent on behalf of a chat.
+ * @property from <em>Optional</em>. Sender of the message; may be empty for messages sent to channels. For backward compatibility, if the message was sent on behalf of a chat, the field contains a fake sender user in non-channel chats
+ * @property sender_chat <em>Optional</em>. Sender of the message when sent on behalf of a chat. For example, the supergroup itself for messages sent by its anonymous administrators or a linked channel for messages automatically forwarded to the channel's discussion group. For backward compatibility, if the message was sent on behalf of a chat, the field <em>from</em> contains a fake sender user in non-channel chats.
  * @property sender_boost_count <em>Optional</em>. If the sender of the message boosted the chat, the number of boosts added by the user
  * @property sender_business_bot <em>Optional</em>. The bot that actually sent the message on behalf of the business account. Available only for outgoing messages sent on behalf of the connected business account.
  * @property business_connection_id <em>Optional</em>. Unique identifier of the business connection from which the message was received. If non-empty, the message belongs to a chat of the corresponding business account that is independent from any potential bot chat which might share the same identifier.
@@ -1898,12 +1898,14 @@ data class ChatMemberAdministrator(
  *
  * @property status The member's status in the chat, always “member”
  * @property user Information about the user
+ * @property until_date <em>Optional</em>. Date when the user's subscription will expire; Unix time
  *
  * @constructor Creates a [ChatMemberMember].
  * */
 data class ChatMemberMember(
     val status: String,
     val user: User,
+    val until_date: Long? = null,
 ) : ChatMember()
 
 /**
@@ -2143,6 +2145,17 @@ data class ReactionTypeEmoji(
 data class ReactionTypeCustomEmoji(
     val type: String,
     val custom_emoji_id: String,
+) : ReactionType()
+
+/**
+ * <p>The reaction is paid.</p>
+ *
+ * @property type Type of the reaction, always “paid”
+ *
+ * @constructor Creates a [ReactionTypePaid].
+ * */
+data class ReactionTypePaid(
+    val type: String,
 ) : ReactionType()
 
 /**
@@ -3844,6 +3857,7 @@ data class RevenueWithdrawalStateFailed(
  * @property type Type of the transaction partner, always “user”
  * @property user Information about the user
  * @property invoice_payload <em>Optional</em>. Bot-specified invoice payload
+ * @property paid_media <em>Optional</em>. Information about the paid media bought by the user
  *
  * @constructor Creates a [TransactionPartnerUser].
  * */
@@ -3851,6 +3865,7 @@ data class TransactionPartnerUser(
     val type: String,
     val user: User,
     val invoice_payload: String? = null,
+    val paid_media: List<PaidMedia>? = null,
 ) : TransactionPartner()
 
 /**
@@ -4632,11 +4647,12 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to send paid media to channel chats. On success, the sent <a href="#message">Message</a> is returned.</p>
+     * <p>Use this method to send paid media. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>). If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
      * @property star_count The number of Telegram Stars that must be paid to buy access to the media
      * @property media A JSON-serialized array describing the media to be sent; up to 10 items
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property caption Media caption, 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the media caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
@@ -4650,6 +4666,7 @@ sealed class TelegramRequest {
         val chat_id: String,
         val star_count: Long,
         val media: List<InputPaidMedia>,
+        val business_connection_id: String? = null,
         val caption: String? = null,
         val parse_mode: ParseMode? = null,
         val caption_entities: List<MessageEntity>? = null,
@@ -4882,11 +4899,11 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Returns <em>True</em> on success.</p>
+     * <p>Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead.
-     * @property reaction A JSON-serialized list of reaction types to set on the message. Currently, as non-premium users, bots can set up to one reaction per message. A custom emoji reaction can be used if it is either already present on the message or explicitly allowed by chat administrators.
+     * @property reaction A JSON-serialized list of reaction types to set on the message. Currently, as non-premium users, bots can set up to one reaction per message. A custom emoji reaction can be used if it is either already present on the message or explicitly allowed by chat administrators. Paid reactions can't be used by bots.
      * @property is_big Pass <em>True</em> to set the reaction with a big animation
      * */
     data class SetMessageReactionRequest(
@@ -5100,6 +5117,34 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
+     * <p>Use this method to create a <a href="https://telegram.org/blog/superchannels-star-reactions-subscriptions#star-subscriptions">subscription invite link</a> for a channel chat. The bot must have the <em>can_invite_users</em> administrator rights. The link can be edited using the method <a href="#editchatsubscriptioninvitelink">editChatSubscriptionInviteLink</a> or revoked using the method <a href="#revokechatinvitelink">revokeChatInviteLink</a>. Returns the new invite link as a <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
+     *
+     * @property chat_id Unique identifier for the target channel chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property subscription_period The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days).
+     * @property subscription_price The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-2500
+     * @property name Invite link name; 0-32 characters
+     * */
+    data class CreateChatSubscriptionInviteLinkRequest(
+        val chat_id: String,
+        val subscription_period: Long,
+        val subscription_price: Long,
+        val name: String? = null,
+    ) : TelegramRequest()
+
+    /**
+     * <p>Use this method to edit a subscription invite link created by the bot. The bot must have the <em>can_invite_users</em> administrator rights. Returns the edited invite link as a <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
+     *
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property invite_link The invite link to edit
+     * @property name Invite link name; 0-32 characters
+     * */
+    data class EditChatSubscriptionInviteLinkRequest(
+        val chat_id: String,
+        val invite_link: String,
+        val name: String? = null,
+    ) : TelegramRequest()
+
+    /**
      * <p>Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
      *
      * @property chat_id Unique identifier of the target chat or username of the target channel (in the format <code>@channelusername</code>)
@@ -5294,7 +5339,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have <em>can_manage_topics</em> administrator rights, unless it is the creator of the topic. Returns <em>True</em> on success.</p>
+     * <p>Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights, unless it is the creator of the topic. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)
      * @property message_thread_id Unique identifier for the target message thread of the forum topic
@@ -5353,7 +5398,7 @@ sealed class TelegramRequest {
     ) : TelegramRequest()
 
     /**
-     * <p>Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have <em>can_manage_topics</em> administrator rights. Returns <em>True</em> on success.</p>
+     * <p>Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)
      * @property name New topic name, 1-128 characters

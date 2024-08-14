@@ -754,11 +754,12 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to send paid media to channel chats. On success, the sent <a href="#message">Message</a> is returned.</p>
+     * <p>Use this method to send paid media. On success, the sent <a href="#message">Message</a> is returned.</p>
      *
-     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>). If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance.
      * @property star_count The number of Telegram Stars that must be paid to buy access to the media
      * @property media A JSON-serialized array describing the media to be sent; up to 10 items
+     * @property business_connection_id Unique identifier of the business connection on behalf of which the message will be sent
      * @property caption Media caption, 0-1024 characters after entities parsing
      * @property parse_mode Mode for parsing entities in the media caption. See <a href="#formatting-options">formatting options</a> for more details.
      * @property caption_entities A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>
@@ -774,6 +775,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
         chat_id: ChatId,
         star_count: Long,
         media: List<InputPaidMedia>,
+        business_connection_id: BusinessConnectionId? = null,
         caption: String? = null,
         parse_mode: ParseMode? = null,
         caption_entities: List<MessageEntity>? = null,
@@ -788,6 +790,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
             chat_id,
             star_count,
             media,
+            business_connection_id,
             caption,
             parse_mode,
             caption_entities,
@@ -1156,11 +1159,11 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Returns <em>True</em> on success.</p>
+     * <p>Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
      * @property message_id Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead.
-     * @property reaction A JSON-serialized list of reaction types to set on the message. Currently, as non-premium users, bots can set up to one reaction per message. A custom emoji reaction can be used if it is either already present on the message or explicitly allowed by chat administrators.
+     * @property reaction A JSON-serialized list of reaction types to set on the message. Currently, as non-premium users, bots can set up to one reaction per message. A custom emoji reaction can be used if it is either already present on the message or explicitly allowed by chat administrators. Paid reactions can't be used by bots.
      * @property is_big Pass <em>True</em> to set the reaction with a big animation
      *
      * @return [Boolean]
@@ -1531,6 +1534,55 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
+     * <p>Use this method to create a <a href="https://telegram.org/blog/superchannels-star-reactions-subscriptions#star-subscriptions">subscription invite link</a> for a channel chat. The bot must have the <em>can_invite_users</em> administrator rights. The link can be edited using the method <a href="#editchatsubscriptioninvitelink">editChatSubscriptionInviteLink</a> or revoked using the method <a href="#revokechatinvitelink">revokeChatInviteLink</a>. Returns the new invite link as a <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
+     *
+     * @property chat_id Unique identifier for the target channel chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property subscription_period The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days).
+     * @property subscription_price The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-2500
+     * @property name Invite link name; 0-32 characters
+     *
+     * @return [ChatInviteLink]
+     * */
+    suspend fun createChatSubscriptionInviteLink(
+        chat_id: ChatId,
+        subscription_period: Long,
+        subscription_price: Long,
+        name: String? = null,
+    ) = telegramPost(
+        "$basePath/createChatSubscriptionInviteLink",
+        CreateChatSubscriptionInviteLinkRequest(
+            chat_id,
+            subscription_period,
+            subscription_price,
+            name,
+        ).toJsonForRequest(),
+        ChatInviteLink.serializer()
+    )
+
+    /**
+     * <p>Use this method to edit a subscription invite link created by the bot. The bot must have the <em>can_invite_users</em> administrator rights. Returns the edited invite link as a <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
+     *
+     * @property chat_id Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)
+     * @property invite_link The invite link to edit
+     * @property name Invite link name; 0-32 characters
+     *
+     * @return [ChatInviteLink]
+     * */
+    suspend fun editChatSubscriptionInviteLink(
+        chat_id: ChatId,
+        invite_link: String,
+        name: String? = null,
+    ) = telegramPost(
+        "$basePath/editChatSubscriptionInviteLink",
+        EditChatSubscriptionInviteLinkRequest(
+            chat_id,
+            invite_link,
+            name,
+        ).toJsonForRequest(),
+        ChatInviteLink.serializer()
+    )
+
+    /**
      * <p>Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as <a href="#chatinvitelink">ChatInviteLink</a> object.</p>
      *
      * @property chat_id Unique identifier of the target chat or username of the target channel (in the format <code>@channelusername</code>)
@@ -1894,7 +1946,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have <em>can_manage_topics</em> administrator rights, unless it is the creator of the topic. Returns <em>True</em> on success.</p>
+     * <p>Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights, unless it is the creator of the topic. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)
      * @property message_thread_id Unique identifier for the target message thread of the forum topic
@@ -2000,7 +2052,7 @@ class TelegramClient(apiKey: String, private val httpClient: HttpClient = HttpCl
     )
 
     /**
-     * <p>Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have <em>can_manage_topics</em> administrator rights. Returns <em>True</em> on success.</p>
+     * <p>Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator rights. Returns <em>True</em> on success.</p>
      *
      * @property chat_id Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)
      * @property name New topic name, 1-128 characters
